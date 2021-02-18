@@ -4,6 +4,12 @@ import * as url from 'url'
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
 import TrayGenerator from "./tray";
 
+
+import PlaylistFeed from "./feed";
+
+//TODO
+// require('crash-reporter').start();
+
 let mainWindow: Electron.BrowserWindow | null
 
 function createWindow () {
@@ -31,9 +37,10 @@ function createWindow () {
     )
   }
 
-  // mainWindow.on('closed', () => {
-  //   mainWindow = null
-  // })
+  mainWindow.on('show', () => {
+    let fr = new PlaylistFeed();
+    fr.fetchFeed();
+  });
 
   mainWindow.on('blur', () => {
     mainWindow?.hide()
