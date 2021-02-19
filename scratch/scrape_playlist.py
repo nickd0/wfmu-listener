@@ -3,6 +3,8 @@ import requests
 import json
 import re
 
+# scrape playlist page for track listing, stream (ie FM or web stream),
+# Timeslot and archive link
 
 def get_param(tag, name):
     try:

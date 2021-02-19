@@ -3,6 +3,7 @@ import * as path from 'path'
 import * as url from 'url'
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
 import TrayGenerator from "./tray";
+import { PlaylistFeedItem } from "./feed";
 
 
 import PlaylistFeed from "./feed";
@@ -39,11 +40,14 @@ function createWindow () {
 
   mainWindow.on('show', () => {
     let fr = new PlaylistFeed();
-    fr.fetchFeed();
+    fr.fetchFeed()
+      .then((playlists: Array<PlaylistFeedItem>) => {
+        mainWindow?.webContents.send('PLAYLISTS_LOADED', { playlists })
+      })
   });
 
   mainWindow.on('blur', () => {
-    mainWindow?.hide()
+    // mainWindow?.hide()
   })
 }
 

@@ -10,12 +10,11 @@ const rotate = keyframes`
 `
 
 export const Container = styled.div`
-    height: 100vh;
     padding: 25px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    // display: flex;
+    // flex-direction: column;
+    // align-items: center;
+    // justify-content: center;
 `
 
 export const Image = styled.img`
@@ -24,7 +23,21 @@ export const Image = styled.img`
     opacity: 0.1;
 `
 export const Text = styled.p`
-    margin-top: 35px;
+    margin-top: 20px;
     font-size: 20px;
     font-weight: bold;
+`
+
+export const Subtitle = styled.p`
+  border-bottom: 1px solid white;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+`
+
+export const TitleSection = styled.div`
+  background: mintcream;
+  color: #191622;
+  margin: 0;
+  padding-top: 1px;
+  padding: 1px 20px 3px 20px;
 `
