@@ -14,8 +14,8 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(png|svg|jpe?g|gif)$/,
-        loader: 'url-loader?limit=1000&name=assets/[name].[sha512:hash:base64:7].[ext]'
+        test: /\.(jpe?g|png|gif|svg)$/i,
+        loader: "url-loader?name=assets/[name].[ext]"
       },
       {
         test: /\.(js|ts|tsx)$/,

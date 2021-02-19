@@ -60,12 +60,12 @@ app.on('ready', () => {
   .then(() => {
 
     if (process.env.NODE_ENV === 'development') {
-      // installExtension(REACT_DEVELOPER_TOOLS)
-      //   .then((name) => console.log(`Added Extension:  ${name}`))
-      //   .catch((err) => console.log('An error occurred: ', err))
-      // installExtension(REDUX_DEVTOOLS)
-      //   .then((name) => console.log(`Added Extension:  ${name}`))
-      //   .catch((err) => console.log('An error occurred: ', err))
+      installExtension(REACT_DEVELOPER_TOOLS)
+        .then((name) => console.log(`Added Extension:  ${name}`))
+        .catch((err) => console.log('An error occurred: ', err))
+      installExtension(REDUX_DEVTOOLS)
+        .then((name) => console.log(`Added Extension:  ${name}`))
+        .catch((err) => console.log('An error occurred: ', err))
     }
   })
 
