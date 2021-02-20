@@ -1,6 +1,7 @@
 ## v0.1.0
 - [X] Display archives
 - [X] Drill into playlist
+- [ ] Link to donate page and playlist page
 - [ ] Mark playlists and shows as listened and favorited
 - [ ] Filter recent archives by your favorite shows
 - [ ] Cycle through different logos and matched styles
@@ -9,3 +10,4 @@
 - [ ] Styling
 - [ ] Tests
 - [ ] view more than just xml feed since its only the last few days?
+- [ ] Timeouts and error handling
