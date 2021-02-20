@@ -15,6 +15,7 @@
     "build:react": "webpack --config webpack/react.webpack.js",
     "package": "npm-run-all build package:dist",
     "package:dist": "electron-builder --dir",
+    "dev-dist-m": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder -m",
     "test": "jest"
   },
   "keywords": [],
@@ -70,7 +71,10 @@
     "webpack-dev-server": "^3.10.3"
   },
   "dependencies": {
+    "@types/howler": "^2.2.1",
     "cheerio": "^1.0.0-rc.5",
+    "css": "^3.0.0",
+    "howler": "^2.2.1",
     "node-fetch": "^2.6.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -78,9 +82,9 @@
     "xml2js": "^0.4.23"
   },
   "build": {
-    "appId": "your.id",
+    "appId": "com.nickdonald.wfmu-listener",
     "mac": {
-      "category": "public.app-category.video"
+      "category": "public.app-category.audio"
     },
     "directories": {
       "output": "packages"

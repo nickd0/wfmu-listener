@@ -12,6 +12,8 @@ const rotate = keyframes`
 export const Container = styled.div`
     padding: 25px;
     padding-bottom: 0;
+    overflow-y: scroll;
+    height: 510px;
 `
 
 export const Image = styled.img`
@@ -37,4 +39,5 @@ export const TitleSection = styled.div`
   margin: 0;
   padding-top: 1px;
   padding: 1px 20px 3px 20px;
+  height: 90px;
 `

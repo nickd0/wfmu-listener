@@ -1,9 +1,11 @@
 ## v0.1.0
-- [ ] Display archives
-- [ ] Drill into playlist
+- [X] Display archives
+- [X] Drill into playlist
 - [ ] Mark playlists and shows as listened and favorited
 - [ ] Filter recent archives by your favorite shows
 - [ ] Cycle through different logos and matched styles
-- [ ] When on playlist page, user can choose to display the playlist's style or default
+- [x] When on playlist page, user can choose to display the playlist's style or default
+- [ ] Stream archive file (using Howler?)
 - [ ] Styling
 - [ ] Tests
+- [ ] view more than just xml feed since its only the last few days?

@@ -1,13 +1,16 @@
 import React from 'react'
 import PlaylistInterface from '../../../interfaces/playlist'
 import { ShowName, ShowSub } from '../../styles/GlobalStyle'
-// import { Text } from "./styles"
+import {
+  TrackContainer, SongArtistText, SongTitleText,
+  TrackSubcontainer, TrackTSContainer, ImgLoader
+} from './styles'
+import { ipcRenderer } from 'electron'
+import imgSrc from '../../../assets/wfmu-loader.png'
 
-import { ipcRenderer } from "electron";
-
-// interface State {
-//   playlists: []
-// }
+interface State {
+  playlist: PlaylistInterface | null
+}
 
 interface Props {
   playlist: PlaylistInterface,
@@ -18,21 +21,36 @@ interface Props {
 // Pull playlist page background, color, and font
 // background == body:background-image or color
 // font == body:font-family and body:color
-const PlaylistView = ({ playlist, backClick }: Props) => (
-  <div>
-    <ShowName>{playlist.showName}</ShowName>
-    <ShowSub>{playlist.dateStr}</ShowSub>
-  </div>
-)
+// const PlaylistView = ({ playlist, backClick }: Props) => (
+export default class PlaylistView extends React.Component<Props, State> {
+  state: Readonly<State> = { playlist: null }
 
-export default PlaylistView
-// export default class PlaylistView extends React.Component {
-//   render() {
-//     return (
-//       <div>
-//         <p>{this.props.title}</p>
-//         <p>{this.props.desc}</p>
-//       </div>
-//     )
-//   }
-// }
+  componentDidMount(): void {
+    ipcRenderer.send('PLAYLIST_SHOW', { playlist: this.props.playlist })
+  }
+
+  render() {
+    const playlist = this.props.playlist
+    return (
+      <div>
+        {playlist.loaded ? null : <ImgLoader src={imgSrc} />}
+        <a href="#" onClick={this.props.backClick}>Back</a>
+        <ShowName>{playlist.showName}</ShowName>
+        <ShowSub>{playlist.dateStr}</ShowSub>
+        <div style={{paddingBottom: '20px'}}>
+          {
+            playlist.songs.map((s, i) => (
+              <TrackContainer key={`track-${i}`}>
+                <TrackSubcontainer>
+                  <SongTitleText>{s.title == '' ? 'Your DJ speaks' : s.title}</SongTitleText>
+                  <SongArtistText>{s.artist}</SongArtistText>
+                </TrackSubcontainer>
+                <TrackTSContainer><p>{s.timestamp}</p></TrackTSContainer>
+              </TrackContainer>
+            ))
+          }
+        </div>
+      </div>
+    )
+  }
+}

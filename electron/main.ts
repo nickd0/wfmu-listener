@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import * as path from 'path'
 import * as url from 'url'
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
@@ -6,7 +6,8 @@ import TrayGenerator from "./tray";
 import { PlaylistFeedItem } from "./feed";
 
 
-import PlaylistFeed from "./feed";
+import PlaylistFeed from './feed';
+import Playlist, { fetchPlaylistInfo } from './playlist'
 
 //TODO
 // require('crash-reporter').start();
@@ -19,6 +20,7 @@ function createWindow () {
     height: 600,
     show: false,
     alwaysOnTop: true,
+    resizable: false,
     frame: false,
     backgroundColor: '#191622',
     webPreferences: {
@@ -39,9 +41,9 @@ function createWindow () {
   }
 
   mainWindow.on('show', () => {
-    let fr = new PlaylistFeed();
+    const fr = new PlaylistFeed()
     fr.fetchFeed()
-      .then((playlists: Array<PlaylistFeedItem>) => {
+      .then((playlists: PlaylistFeedItem[]) => {
         mainWindow?.webContents.send('PLAYLISTS_LOADED', { playlists })
       })
   });
@@ -49,16 +51,22 @@ function createWindow () {
   mainWindow.on('blur', () => {
     // mainWindow?.hide()
   })
+
+  ipcMain.on('PLAYLIST_SHOW', (evt, args: {playlist: Playlist}) => {
+    fetchPlaylistInfo(args.playlist)
+      .then((pl: Playlist) => {
+        evt.reply('PLAYLIST_LOAD', pl)
+      })
+  })
 }
 
 app.on('ready', () => {
-    createWindow();
-    const Tray = new TrayGenerator(mainWindow!);
-    Tray.createTray();
-  })
+  createWindow()
+  const Tray = new TrayGenerator(mainWindow!)
+  Tray.createTray()
+})
   .whenReady()
   .then(() => {
-
     if (process.env.NODE_ENV === 'development') {
       installExtension(REACT_DEVELOPER_TOOLS)
         .then((name) => console.log(`Added Extension:  ${name}`))
@@ -69,4 +77,7 @@ app.on('ready', () => {
     }
   })
 
+
+
 app.allowRendererProcessReuse = true
+

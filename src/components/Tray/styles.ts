@@ -17,7 +17,5 @@ export const Subtitle = styled.p`
 `
 
 export const FeedList = styled.div`
-  overflow-y: scroll;
-  height: 490px;
 `
 

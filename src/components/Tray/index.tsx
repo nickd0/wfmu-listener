@@ -17,23 +17,18 @@ interface State {
 }
 
 interface Props {
-  clickHandler: (pl: PlaylistInterface) => void
+  clickHandler: (pl: PlaylistInterface) => void,
+  playlists: PlaylistInterface[]
 }
 
 export default class TrayView extends React.Component<Props, State> {
   state: Readonly<State> = { playlists: [] }
 
-  componentDidMount(): void {
-    ipcRenderer.on('PLAYLISTS_LOADED', (event, data) => {
-      this.setState({ playlists: data.playlists })
-    })
-  }
-
   render() {
     return (
       <FeedList>
         {
-          this.state.playlists.map((pl: PlaylistInterface) => (
+          this.props.playlists.map((pl: PlaylistInterface) => (
             <FeedGroup key={pl.id} onClick={this.props.clickHandler.bind(this, pl)}>
               <ShowName>{pl.showName}</ShowName>
               <ShowSub>{pl.dateStr}</ShowSub>
