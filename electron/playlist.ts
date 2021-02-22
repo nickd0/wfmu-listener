@@ -24,7 +24,7 @@ export class Song implements SongInterface {
     this.timestamp = timestamp
     this.album = null
     this.label = null
-    this.loaded = false;
+    this.loaded = false
   }
 }
 
@@ -35,6 +35,17 @@ export interface PlaylistRawObject {
   link: Array<string>
 }
 
+export function fetchPlaylistFile(playlist: Playlist): Promise<Playlist> {
+  return fetch(playlist.streamUrl)
+    .then((resp: Response) => resp.text())
+    .then((mp3Url: string) => {
+      return new Promise((resolve) => {
+        playlist.mp3Url = mp3Url
+        resolve(playlist)
+      })
+    })
+}
+
 export function fetchPlaylistInfo(playlist: Playlist): Promise<Playlist> {
   const url = new URL(playlist.id.toString(), PLAYLIST_BASE_URL)
   return fetch(url)
@@ -42,7 +53,7 @@ export function fetchPlaylistInfo(playlist: Playlist): Promise<Playlist> {
     .then((text: string) => {
       return new Promise((resolve) => {
         const $ = cheerio.load(text)
-        
+
         // Scrape playlist page
         $('tr[id^="drop_"]').each((i, el) => {
           const dat = $(el)
@@ -73,10 +84,12 @@ export default class Playlist implements PlaylistInterface {
   id: number;
   showName: string;
   dateStr: string;
-  playlistUrl: URL;
-  streamUrl: URL;
+  playlistUrl: string;
+  streamUrl: string;
+  mp3Url: string | null;
   songs: Song[];
   style: unknown;
+  loaded: boolean;
 
   constructor(obj: PlaylistRawObject) {
     const title = obj.title[0]
@@ -86,11 +99,13 @@ export default class Playlist implements PlaylistInterface {
     this.dateStr = matches?.[2] ?? '--'
 
     // TODO
-    this.streamUrl = new URL(obj.link[0])
+    this.streamUrl = obj.link[0]
     this.id = parseInt(obj.link[0].match(/show=(\d+)$/)?.[1] ?? '0')
-    this.playlistUrl = new URL(this.id.toString(), PLAYLIST_BASE_URL)
+    this.playlistUrl = PLAYLIST_BASE_URL + this.id.toString()
 
     this.songs = []
+    this.mp3Url = null
+    this.loaded = false
   }
 
   fetchInfo(): Promise<Playlist> {

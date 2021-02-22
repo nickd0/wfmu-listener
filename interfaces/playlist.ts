@@ -11,8 +11,9 @@ export default interface PlaylistInterface {
   id: number;
   showName: string;
   dateStr: string;
-  playlistUrl: URL;
-  streamUrl: URL;
+  playlistUrl: string;
+  streamUrl: string;
+  mp3Url: string | null;
   songs: SongInterface[];
   loaded: boolean;
 

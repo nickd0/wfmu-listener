@@ -18,10 +18,10 @@ export default class PlaylistFeed {
   pubDate: Date | null;
 
   constructor(feedURL: string = DEFAULT_FEED) {
-    this.feedURL = feedURL;
-    this.parsed = false;
-    this.items = [];
-    this.pubDate = null;
+    this.feedURL = feedURL
+    this.parsed = false
+    this.items = []
+    this.pubDate = null
   }
 
   fetchFeed() {
@@ -29,15 +29,15 @@ export default class PlaylistFeed {
       .then((res: Response) => res.text())
       .then(parseStringPromise)
       .then((parsed: any) => {
-        return new Promise((resolve, _) => {
-          let feed = parsed.rss;
+        return new Promise((resolve, reject) => {
+          const feed = parsed.rss
           this.pubDate = new Date(feed.pubDate);
           // TODO don't assume single channel?
           feed.channel[0].item
             .map((item: PlaylistRawObject) => {
               this.items.push(new Playlist(item))
             });
-          resolve(this.items);
+          resolve(this.items)
         });
 
         // Fetch the playlist when selected

@@ -3,11 +3,10 @@ import * as path from 'path'
 import * as url from 'url'
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
 import TrayGenerator from "./tray";
-import { PlaylistFeedItem } from "./feed";
 
 
 import PlaylistFeed from './feed';
-import Playlist, { fetchPlaylistInfo } from './playlist'
+import Playlist, { fetchPlaylistInfo, fetchPlaylistFile } from './playlist'
 
 //TODO
 // require('crash-reporter').start();
@@ -43,7 +42,7 @@ function createWindow () {
   mainWindow.on('show', () => {
     const fr = new PlaylistFeed()
     fr.fetchFeed()
-      .then((playlists: PlaylistFeedItem[]) => {
+      .then((playlists: Playlist[]) => {
         mainWindow?.webContents.send('PLAYLISTS_LOADED', { playlists })
       })
   });
@@ -56,6 +55,11 @@ function createWindow () {
     fetchPlaylistInfo(args.playlist)
       .then((pl: Playlist) => {
         evt.reply('PLAYLIST_LOAD', pl)
+        fetchPlaylistFile(pl)
+          .then((pl: Playlist) => {
+            // TODO use a different event here?
+            evt.reply('PLAYLIST_LOAD', pl)
+          })
       })
   })
 }

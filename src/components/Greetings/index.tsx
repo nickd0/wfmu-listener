@@ -2,7 +2,12 @@
 import PlaylistInterface, { PlaylistStyle } from "../../../interfaces/playlist";
 import React from 'react'
 
-import { Container, TitleSection, Subtitle, Image, Text } from './styles'
+import {
+  Container, TitleSection, Subtitle,
+  LogoSection, ListSelectSection, Image,
+  StreamSelect
+} from './styles'
+
 import TrayView from "../Tray";
 import PlaylistView from "../Playlist";
 import { extends } from "../../../commitlint.config";
@@ -23,6 +28,7 @@ class Greetings extends React.Component {
 
   componentDidMount() {
     ipcRenderer.on('PLAYLISTS_LOADED', (event, data) => {
+      debugger
       this.setState({ playlists: data.playlists })
     })
 
@@ -60,9 +66,15 @@ class Greetings extends React.Component {
     return (
       <div style={{height: "100%"}}>
         <TitleSection>
-          {/* <img src={imgSrc} /> */}
-          <Text>WFMU listener</Text>
-          <Subtitle>Latest Archives</Subtitle>
+          <LogoSection>
+            <Image src={imgSrc} />
+          </LogoSection>
+          <ListSelectSection>
+            {/* <Subtitle>Latest Archives</Subtitle> */}
+            <StreamSelect defaultValue={"latest"}>
+              <option value="latest">Latest archives</option>
+            </StreamSelect>
+          </ListSelectSection>
           {/* Add donate link */}
         </TitleSection>
         <Container style={this.renderPlaylistStyle()}>

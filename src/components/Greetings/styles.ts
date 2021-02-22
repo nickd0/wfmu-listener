@@ -17,9 +17,7 @@ export const Container = styled.div`
 `
 
 export const Image = styled.img`
-    width: 300px;
-    animation: ${rotate} 15s linear infinite;
-    opacity: 0.1;
+  width: 100%;
 `
 export const Text = styled.p`
     margin-top: 20px;
@@ -40,4 +38,19 @@ export const TitleSection = styled.div`
   padding-top: 1px;
   padding: 1px 20px 3px 20px;
   height: 90px;
+  display: flex;
+  align-items: center;
+`
+
+export const LogoSection = styled.div`
+  width: 40%;
+  order 0;
+`
+export const ListSelectSection = styled.div`
+  width: 60%;
+  order 1;
+  text-align: right;
+`
+
+export const StreamSelect = styled.select`
 `
