@@ -1,5 +1,9 @@
 import { Howl } from 'howler'
 import React from 'react'
+import {
+  PlayerContainer, PlayerControlsContainer, PlayerInfo,
+  PlayerArtist, PlayerTrackName, PlayerPlaylist
+} from './styles'
 
 interface Props {
   streamUrl: string
@@ -29,7 +33,15 @@ export default class Player extends React.Component<Props> {
 
   render() {
     return (
-      <div>Player</div>
+      <PlayerContainer>
+        <PlayerInfo>
+          <PlayerTrackName>Track name</PlayerTrackName>
+          <PlayerArtist>Artist</PlayerArtist>
+          <PlayerPlaylist>The name of the show with DJ</PlayerPlaylist>
+        </PlayerInfo>
+        <PlayerControlsContainer>
+        </PlayerControlsContainer>
+      </PlayerContainer>
     )
   }
 }

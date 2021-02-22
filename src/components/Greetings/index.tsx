@@ -8,6 +8,8 @@ import {
   StreamSelect
 } from './styles'
 
+import Player from '../Player'
+
 import TrayView from "../Tray";
 import PlaylistView from "../Playlist";
 import { extends } from "../../../commitlint.config";
@@ -28,7 +30,6 @@ class Greetings extends React.Component {
 
   componentDidMount() {
     ipcRenderer.on('PLAYLISTS_LOADED', (event, data) => {
-      debugger
       this.setState({ playlists: data.playlists })
     })
 
@@ -85,6 +86,7 @@ class Greetings extends React.Component {
               this.renderPlaylist()
           }
         </Container>
+        <Player />
       </div>
     )
   }

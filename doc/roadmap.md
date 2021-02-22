@@ -11,6 +11,7 @@
 - [ ] Tests
 - [ ] view more than just xml feed since its only the last few days?
 - [ ] Timeouts and error handling
+- [ ] Redux?
 
 ## v0.2.0
 - [ ] Sharable show recommendation files that include a playlist id and specific tracks
