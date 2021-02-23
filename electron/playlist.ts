@@ -15,16 +15,30 @@ export class Song implements SongInterface {
   artist: string;
   album: string | null;
   label: string | null;
-  timestamp: string | null;
+  timestampStr: string | null;
+  timestamp: number | null;
   loaded: boolean;
 
   constructor(title: string, artist: string, timestamp: string | null) {
     this.title = title
     this.artist = artist
-    this.timestamp = timestamp
+    this.timestampStr = timestamp
     this.album = null
     this.label = null
     this.loaded = false
+
+    this.timestamp = this.timestampStr?.split(':')
+      .map((v) => parseInt(v))
+      .reduce((acc: number, val: number, i: number) => {
+        if (i === 0) {
+          acc += val * 3600
+        } else if (i === 1) {
+          acc += val * 60
+        } else {
+          acc += val
+        }
+        return acc
+      }, 0) ?? null
   }
 }
 

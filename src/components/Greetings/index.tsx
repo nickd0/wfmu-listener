@@ -20,6 +20,7 @@ import imgSrc from '../../../assets/main-logo.png'
 interface State {
   activePlaylist: PlaylistInterface | null,
   showPlaylist: boolean,
+  currSongIdx: number | null,
   playlists: PlaylistInterface[]
 }
 
@@ -27,6 +28,7 @@ class Greetings extends React.Component {
   state: Readonly<State> = {
     activePlaylist: null,
     showPlaylist: false,
+    currSongIdx: null,
     playlists: []
   }
 
@@ -49,7 +51,11 @@ class Greetings extends React.Component {
   }
 
   renderPlaylist() {
-    return <PlaylistView playlist={this.state.activePlaylist!} backClick={this.clearPlaylist.bind(this)} />
+    return <PlaylistView currSongIdx={this.state.currSongIdx} playlist={this.state.activePlaylist!} backClick={this.clearPlaylist.bind(this)} />
+  }
+
+  setCurrSong(idx: number) {
+    this.setState({ currSongIdx: idx })
   }
 
   renderPlaylistStyle(): React.CSSProperties {
@@ -67,7 +73,7 @@ class Greetings extends React.Component {
 
   renderPlayer() {
     if (this.state.activePlaylist?.mp3Url != null) {
-      return <Player streamUrl={this.state.activePlaylist!.mp3Url!} />
+      return <Player setCurrSong={this.setCurrSong.bind(this)} playlist={this.state.activePlaylist!} streamUrl={this.state.activePlaylist!.mp3Url!} />
     }
     return null
   }

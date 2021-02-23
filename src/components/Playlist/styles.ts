@@ -12,6 +12,10 @@ export const TrackContainer = styled.div`
   &:hover {
     border: 1px solid;
   }
+
+  
+    background-color: ${props => (props.playing ? 'rgba(255,255,255,0.3)' : 'none')}
+  }
 `
 
 export const SongTitleText = styled.p`

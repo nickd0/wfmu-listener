@@ -8,8 +8,9 @@ export const PlayerControlsContainer = styled.div`
   position: relative;
   z-index: 1;
   display: flex;
-  padding: 10px;
+  padding: 10px 15px;
   color: #191622;
+  align-items: center;
 `
 
 export const PlayerControls = styled.div`
@@ -17,6 +18,12 @@ export const PlayerControls = styled.div`
   width: 33%;
   a {
     color: #191622;
+  }
+
+  text-align: center;
+
+  .oi {
+    margin-right: 20px;
   }
 `
 
@@ -68,6 +75,23 @@ export const PlayerContainer = styled.div`
   transition: bottom 0.2s;
 `
 
-export const Icon = styled.span`
-  font-family: OpenIconic
+export const ScrubberContainer = styled.div`
+  order: 1;
+  width: 67%;
+  position: relative;
+`
+export const ScrubberLine = styled.div`
+  width: 100%;
+  position: relative;
+  border: 1px solid #191622;
+`
+
+export const ScrubberHandle = styled.div`
+  position: absolute;
+  width: 5px;
+  height: 20px;
+  background-color: #191622;
+  border-radius: 5px;
+  top: -8px;
+  cursor: pointer;
 `

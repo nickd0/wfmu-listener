@@ -3,5 +3,6 @@ export default interface SongInterface {
   artist: string;
   album: string | null;
   label: string | null;
-  timestamp: string | null;
+  timestampStr: string | null;
+  timestamp: number | null;
 }

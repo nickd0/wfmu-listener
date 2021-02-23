@@ -15,6 +15,7 @@ interface State {
 
 interface Props {
   playlist: PlaylistInterface,
+  currSongIdx: number | null,
   backClick: () => void
 }
 
@@ -30,13 +31,7 @@ export default class PlaylistView extends React.Component<Props, State> {
     ipcRenderer.send('PLAYLIST_SHOW', { playlist: this.props.playlist })
   }
 
-  renderPlayer(): Player | null {
-    if (this.props.playlist.mp3Url) {
-      return <Player streamUrl={this.props.playlist.mp3Url!} />
-    }
-    return null
-  }
-
+  // TODO: curr song idx needs to also track which playlist, not just track idx
   render() {
     const playlist = this.props.playlist
     return (
@@ -45,16 +40,15 @@ export default class PlaylistView extends React.Component<Props, State> {
         <a href="#" onClick={this.props.backClick}>Back</a>
         <ShowName>{playlist.showName}</ShowName>
         <ShowSub>{playlist.dateStr}</ShowSub>
-        {this.renderPlayer()}
         <div style={{paddingBottom: '20px'}}>
           {
             playlist.songs.map((s, i) => (
-              <TrackContainer key={`track-${i}`}>
+              <TrackContainer key={`track-${i}`} playing={i === this.props.currSongIdx}>
                 <TrackSubcontainer>
-                  <SongTitleText>{s.title == '' ? 'Your DJ speaks' : s.title}</SongTitleText>
+                  <SongTitleText>{s.title === '' ? 'Your DJ speaks' : s.title}</SongTitleText>
                   <SongArtistText>{s.artist}</SongArtistText>
                 </TrackSubcontainer>
-                <TrackTSContainer><p>{s.timestamp}</p></TrackTSContainer>
+                <TrackTSContainer><p>{s.timestampStr}</p></TrackTSContainer>
               </TrackContainer>
             ))
           }
