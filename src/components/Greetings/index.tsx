@@ -19,12 +19,14 @@ import imgSrc from '../../../assets/main-logo.png'
 
 interface State {
   activePlaylist: PlaylistInterface | null,
+  showPlaylist: boolean,
   playlists: PlaylistInterface[]
 }
 
 class Greetings extends React.Component {
   state: Readonly<State> = {
     activePlaylist: null,
+    showPlaylist: false,
     playlists: []
   }
 
@@ -63,6 +65,13 @@ class Greetings extends React.Component {
     return {}
   }
 
+  renderPlayer() {
+    if (this.state.activePlaylist?.mp3Url != null) {
+      return <Player streamUrl={this.state.activePlaylist!.mp3Url!} />
+    }
+    return null
+  }
+
   render() {
     return (
       <div style={{height: "100%"}}>
@@ -86,7 +95,7 @@ class Greetings extends React.Component {
               this.renderPlaylist()
           }
         </Container>
-        <Player />
+        {this.renderPlayer()}
       </div>
     )
   }

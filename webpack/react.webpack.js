@@ -18,6 +18,14 @@ module.exports = {
         loader: "url-loader?name=assets/[name].[ext]"
       },
       {
+        test: /\.(scss)$/i,
+        loaders: ["style-loader", "css-loader", "sass-loader"]
+      },
+      {
+        test: /\.(woff2|woff|eot|ttf|otf)$/,
+        loader: "url-loader?name=assets/[name].[ext]"
+      },
+      {
         test: /\.(js|ts|tsx)$/,
         exclude: /node_modules/,
         use: {

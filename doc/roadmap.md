@@ -6,7 +6,8 @@
 - [ ] Filter recent archives by your favorite shows
 - [ ] Cycle through different logos and matched styles
 - [x] When on playlist page, user can choose to display the playlist's style or default
-- [ ] Stream archive file (using Howler?)
+- [x] Stream archive file (using Howler?)
+- [ ] Player control; Playback continues while navigating back to feed page
 - [ ] Styling
 - [ ] Tests
 - [ ] view more than just xml feed since its only the last few days?

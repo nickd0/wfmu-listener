@@ -1,4 +1,6 @@
 import styled, { createGlobalStyle } from 'styled-components'
+import OpenIconicFont from '../../assets/fonts/open-iconic.ttf'
+import '../../assets/css/open-iconic.scss'
 
 export const GlobalStyle = createGlobalStyle`
   * {
@@ -21,6 +23,15 @@ export const GlobalStyle = createGlobalStyle`
   #root {
     height: 100%
   }
+
+  // @font-face {
+  //   font-family: OpenIconic;
+  //   font-style: normal;
+  //   font-weight: 400;
+  //   src: url(${OpenIconicFont});
+  //   src: url('../fonts/open-iconic.eot');
+  //   src: url('../fonts/open-iconic.eot?#iconic-sm') format('embedded-opentype'), url('../fonts/open-iconic.woff') format('woff'), url('../fonts/open-iconic.ttf') format('truetype'), url('../fonts/open-iconic.otf') format('opentype'), url('../fonts/open-iconic.svg#iconic-sm') format('svg');
+  // }
 `
 
 export const ShowName = styled.p`
@@ -30,3 +41,4 @@ export const ShowName = styled.p`
 export const ShowSub = styled.p`
   font-size: 16px;
 `
+

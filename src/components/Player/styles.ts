@@ -7,6 +7,22 @@ export const PlayerControlsContainer = styled.div`
   border-top-right-radius: 5px;
   position: relative;
   z-index: 1;
+  display: flex;
+  padding: 10px;
+  color: #191622;
+`
+
+export const PlayerControls = styled.div`
+  order: 0;
+  width: 33%;
+  a {
+    color: #191622;
+  }
+`
+
+export const TimeControls = styled.div`
+  order: 1;
+  width: 67%;
 `
 
 export const PlayerInfo = styled.div`
@@ -39,9 +55,19 @@ export const PlayerContainer = styled.div`
   width: 100%;
   height: 95px;
   position: absolute;
-  bottom: 0;
+  bottom: -50px;
 
   &:hover ${PlayerInfo} {
     top: 0
   }
+
+  &.ready {
+    bottom: 0;
+  }
+
+  transition: bottom 0.2s;
+`
+
+export const Icon = styled.span`
+  font-family: OpenIconic
 `
