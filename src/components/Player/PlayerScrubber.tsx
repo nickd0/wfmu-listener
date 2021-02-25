@@ -8,7 +8,9 @@ import { ScrubberContainer, ScrubberLine, ScrubberHandle } from './styles'
 
 interface Props {
   duration: number,
-  eTime: number
+  eTime: number,
+  onScrubberMove: (n: number) => void
+  onScrubberEnd: () => void
 }
 
 interface State {
@@ -24,25 +26,42 @@ class PlayerScrubber extends React.Component<Props, State> {
 
   onScrubberMouseUp() {
     this.setState({scrubMove: false})
+    this.props.onScrubberEnd()
   }
 
   onScrubberDrag(e) {
     if (this.state.scrubMove) {
-      console.log(e)
+      this.sendScrubberPosition(e.pageX)
+      // const rect = this.refs.scrubLine.getBoundingClientRect()
+      // const perc = Math.min(Math.max((e.pageX - rect.x) / (rect.width), 0), 1)
+      // console.log(`pagex: ${e.pageX}, perc: ${perc}`)
+      // this.props.onScrubberMove(perc)
     }
   }
 
+  onScrubberLineClick(e) {
+    this.sendScrubberPosition(e.pageX, true)
+  }
+
+  sendScrubberPosition(pageX: number, end = false): void {
+    const rect = this.refs.scrubLine.getBoundingClientRect()
+    const perc = Math.min(Math.max((pageX - rect.x) / (rect.width), 0), 1)
+    this.props.onScrubberMove(perc, end)
+  }
+
   render() {
-    const scrubberPos = (this.props.eTime * 100 / (this.props.duration * 1000))
+    const scrubberPos = (this.props.eTime * 100 / (this.props.duration))
 
     return (
-      <ScrubberContainer>
-        <ScrubberLine
+      // <ScrubberContainer onMouseMove={this.onScrubberDrag.bind(this)} onMouseLeave={this.onScrubberMouseUp.bind(this)}>
+      <ScrubberContainer onMouseMove={this.onScrubberDrag.bind(this)}>
+        <ScrubberLine onClick={this.onScrubberLineClick.bind(this)} ref="scrubLine"/>
+        <ScrubberHandle
+          style={{ left: `${scrubberPos}%` }}
           onMouseDown={this.onScrubberMouseDown.bind(this)}
           onMouseUp={this.onScrubberMouseUp.bind(this)}
           onMouseMove={this.onScrubberDrag.bind(this)}
         />
-        <ScrubberHandle style={{ left: `${scrubberPos}%` }} />
       </ScrubberContainer>
     )
   }

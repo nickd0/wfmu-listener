@@ -18,9 +18,10 @@ export class Song implements SongInterface {
   timestampStr: string | null;
   timestamp: number | null;
   loaded: boolean;
+  approxTimestamp: boolean;
 
   constructor(title: string, artist: string, timestamp: string | null) {
-    this.title = title
+    this.title = title === '' ? 'Your DJ speaks' : title
     this.artist = artist
     this.timestampStr = timestamp
     this.album = null
@@ -39,6 +40,15 @@ export class Song implements SongInterface {
         }
         return acc
       }, 0) ?? null
+
+    this.approxTimestamp = this.timestamp === null
+  }
+
+  addTime(n: number): number | null {
+    if (this.timestamp !== null) {
+      return this.timestamp! + n
+    }
+    return null
   }
 }
 
@@ -78,6 +88,14 @@ export function fetchPlaylistInfo(playlist: Playlist): Promise<Playlist> {
 
           playlist.songs.push(new Song(title, artist, ts))
         })
+
+        // TODO, this can be done in 1 loop, fix
+        playlist.songs.forEach((song, i) => {
+          if (i > 0 && song.timestamp === null) {
+            playlist.songs[i].timestamp = playlist.songs[i - 1]?.addTime(240) ?? null
+          }
+        })
+
         const styleSheet = $('#playlist_css_additional')
         const parsed = css.parse(styleSheet.contents().text())
         const rules = parsed.stylesheet.rules.filter((r) => r.selectors.includes('BODY') || r.selectors.includes('body'))

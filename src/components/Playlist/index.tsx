@@ -31,6 +31,18 @@ export default class PlaylistView extends React.Component<Props, State> {
     ipcRenderer.send('PLAYLIST_SHOW', { playlist: this.props.playlist })
   }
 
+  trackStyle(idx: number): React.CSSProperties {
+    if (idx == this.props.currSongIdx) {
+      const pl = this.props.playlist
+      return {
+        color: pl.style['background-color'] || 'inherit',
+        backgroundColor: pl.style.color || 'inherit'
+      }
+    } else {
+      return {}
+    }
+  }
+
   // TODO: curr song idx needs to also track which playlist, not just track idx
   render() {
     const playlist = this.props.playlist
@@ -40,12 +52,12 @@ export default class PlaylistView extends React.Component<Props, State> {
         <a href="#" onClick={this.props.backClick}>Back</a>
         <ShowName>{playlist.showName}</ShowName>
         <ShowSub>{playlist.dateStr}</ShowSub>
-        <div style={{paddingBottom: '20px'}}>
+        <div style={{paddingBottom: '70px'}}>
           {
             playlist.songs.map((s, i) => (
-              <TrackContainer key={`track-${i}`} playing={i === this.props.currSongIdx}>
+              <TrackContainer key={`track-${i}`} playing={i === this.props.currSongIdx} style={this.trackStyle(i)}>
                 <TrackSubcontainer>
-                  <SongTitleText>{s.title === '' ? 'Your DJ speaks' : s.title}</SongTitleText>
+                  <SongTitleText>{s.title}</SongTitleText>
                   <SongArtistText>{s.artist}</SongArtistText>
                 </TrackSubcontainer>
                 <TrackTSContainer><p>{s.timestampStr}</p></TrackTSContainer>

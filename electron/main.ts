@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import * as path from 'path'
 import * as url from 'url'
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
@@ -64,11 +64,12 @@ function createWindow () {
   })
 }
 
-app.on('ready', () => {
-  createWindow()
-  const Tray = new TrayGenerator(mainWindow!)
-  Tray.createTray()
-})
+app
+  .on('ready', () => {
+    createWindow()
+    const Tray = new TrayGenerator(mainWindow!)
+    Tray.createTray()
+  })
   .whenReady()
   .then(() => {
     if (process.env.NODE_ENV === 'development') {
@@ -80,6 +81,17 @@ app.on('ready', () => {
         .catch((err) => console.log('An error occurred: ', err))
     }
   })
+
+// media controls
+
+let registered = globalShortcut.register('mediaplaypause', function () {
+  console.log('mediaplaypause pressed')
+})
+if (!registered) {
+  console.log('mediaplaypause registration failed')
+} else {
+  console.log('mediaplaypause registration bound!')
+}
 
 
 

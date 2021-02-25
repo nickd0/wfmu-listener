@@ -42,20 +42,34 @@ export const PlayerInfo = styled.div`
   position: relative;
   z-index: 0;
 
-  top: 45px;
+  // top: 45px;
 
   transition: top 0.2s;
 `
 
 export const PlayerTrackName = styled.span`
-  font-weight: bolder
+  font-weight: bolder;
+  white-space: nowrap;
 `
 
 export const PlayerArtist = styled.span`
-  padding-left: 10px
+  padding-left: 10px;
+  white-space: nowrap;
 `
 
 export const PlayerPlaylist = styled.p`
+`
+
+export const PlayerInfoWrap = styled.div`
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+`
+
+export const ScrollablePlayerInfo = styled.div`
+  position: relative;
+  display: inline-block;
+  left: 0;
 `
 
 export const PlayerContainer = styled.div`
@@ -63,10 +77,6 @@ export const PlayerContainer = styled.div`
   height: 95px;
   position: absolute;
   bottom: -50px;
-
-  &:hover ${PlayerInfo} {
-    top: 0
-  }
 
   &.ready {
     bottom: 0;
@@ -79,11 +89,16 @@ export const ScrubberContainer = styled.div`
   order: 1;
   width: 67%;
   position: relative;
+  display: flex;
+  height: 100%;
+  align-items: center
 `
 export const ScrubberLine = styled.div`
   width: 100%;
   position: relative;
-  border: 1px solid #191622;
+  border: 1px solid #b0afb1;
+  height: 7px;
+  background-color: #b0afb1;
 `
 
 export const ScrubberHandle = styled.div`
@@ -92,6 +107,5 @@ export const ScrubberHandle = styled.div`
   height: 20px;
   background-color: #191622;
   border-radius: 5px;
-  top: -8px;
   cursor: pointer;
 `
