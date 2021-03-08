@@ -1,16 +1,33 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, protocol } from 'electron'
+import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import * as path from 'path'
 import * as url from 'url'
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
-import TrayGenerator from "./tray";
+import TrayGenerator from './tray'
 
 
-import PlaylistFeed from './feed';
+import PlaylistFeed from './feed'
 import Playlist, { fetchPlaylistInfo, fetchPlaylistFile } from './playlist'
-import { electron } from 'process';
+import { autoUpdater } from 'electron-updater'
+import log from 'electron-log'
 
 //TODO
 // require('crash-reporter').start();
+
+export default class AppUpdater {
+  constructor() {
+    log.transports.file.level = 'info'
+    autoUpdater.logger = log
+    autoUpdater.checkForUpdatesAndNotify()
+  }
+}
+
+const RESOURCES_PATH = app.isPackaged
+  ? path.join(process.resourcesPath, 'assets')
+  : path.join(__dirname, '../assets')
+
+const getAssetPath = (...paths: string[]): string => {
+  return path.join(RESOURCES_PATH, ...paths)
+}
 
 let mainWindow: Electron.BrowserWindow | null
 
@@ -21,6 +38,7 @@ function createWindow () {
     show: false,
     alwaysOnTop: true,
     resizable: false,
+    icon: getAssetPath('icon.icns'),
     // frame: false,
     titleBarStyle: 'hidden',
     backgroundColor: '#191622',
@@ -67,6 +85,8 @@ function createWindow () {
           })
       })
   })
+
+  // new AppUpdater()
 }
 
 // Playlist url format: wfmu-listener://playlists?show=12345
@@ -84,7 +104,7 @@ app
     // registerProtocol()
     app.setAsDefaultProtocolClient('wfmu-listener')
     const Tray = new TrayGenerator(mainWindow!)
-    Tray.createTray()
+    Tray.createTray(getAssetPath('tray_fmu.png'))
   })
   .whenReady()
   .then(() => {

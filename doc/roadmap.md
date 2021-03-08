@@ -3,6 +3,7 @@
 - [X] Drill into playlist
 - [ ] Link to donate page and playlist page
   - After a certain number of streams
+  - Pull currently campaigns from server
 - [ ] Mark playlists and shows as listened and favorited
 - [x] Playlist URL capture
 - [ ] Drag and drop playlist links
@@ -31,6 +32,7 @@
   - https://github.com/MarshallOfSound/electron-media-service
   - https://github.com/MarshallOfSound/Google-Play-Music-Desktop-Player-UNOFFICIAL-
 - [ ] Live listening
+- [ ] Persist currently playing playlist, timestamp, favorites, etc
 
 ## v0.3.0
 - [ ] Spotify integration, save to playlists, etc

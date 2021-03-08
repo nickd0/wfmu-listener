@@ -79,6 +79,8 @@
     "@types/howler": "^2.2.1",
     "cheerio": "^1.0.0-rc.5",
     "css": "^3.0.0",
+    "electron-log": "^4.3.2",
+    "electron-updater": "^4.3.8",
     "howler": "^2.2.1",
     "node-fetch": "^2.6.1",
     "react": "^16.13.1",
@@ -88,24 +90,21 @@
   },
   "build": {
     "appId": "com.nickdonald.wfmu-listener",
+    "productName": "WFMU Listener",
     "mac": {
       "category": "public.app-category.audio"
     },
     "directories": {
-      "output": "packages"
+      "output": "packages",
+      "buildResources": "assets"
     },
     "files": [
       "package.json",
-      "dist/**"
+      "dist/**",
+      "assets/**"
     ],
-    "extraFiles": [
-      {
-        "from": "assets",
-        "to": "Resources/assets",
-        "filter": [
-          "**/*"
-        ]
-      }
+    "extraResources": [
+      "./assets/**"
     ]
   },
   "config": {

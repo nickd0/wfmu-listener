@@ -43,10 +43,10 @@ export default class TrayGenerator {
   rightClickMenu() {
   }
 
-  createTray() {
-    this.tray = new Tray(path.join(__dirname, '../assets/tray_fmu.png'));
-    this.tray.setIgnoreDoubleClickEvents(true);
+  createTray(icon: string) {
+    this.tray = new Tray(icon)
+    this.tray.setIgnoreDoubleClickEvents(true)
   
-    this.tray.on('click', this.toggleWindow.bind(this));
+    this.tray.on('click', this.toggleWindow.bind(this))
   };
 }

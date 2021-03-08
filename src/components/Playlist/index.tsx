@@ -5,7 +5,7 @@ import {
   TrackContainer, SongArtistText, SongTitleText,
   TrackSubcontainer, TrackTSContainer, ImgLoader
 } from './styles'
-import { ipcRenderer } from 'electron'
+import { ipcRenderer, clipboard } from 'electron'
 import imgSrc from '../../../assets/wfmu-loader.png'
 import Player from '../Player'
 
