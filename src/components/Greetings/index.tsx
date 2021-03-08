@@ -5,20 +5,21 @@ import React from 'react'
 import {
   Container, TitleSection, Subtitle,
   LogoSection, ListSelectSection, Image,
-  StreamSelect
+  StreamSelect, DragHeader
 } from './styles'
 
 import Player from '../Player'
 
 import TrayView from "../Tray";
 import PlaylistView from "../Playlist";
-import { extends } from "../../../commitlint.config";
 import { ipcRenderer } from 'electron'
 
 import imgSrc from '../../../assets/main-logo.png'
+import Playlist, { PlaylistRawObject } from "../../../electron/playlist";
 
 interface State {
   activePlaylist: PlaylistInterface | null,
+  viewingPlaylist: PlaylistInterface | null,
   showPlaylist: boolean,
   currSongIdx: number | null,
   playlists: PlaylistInterface[]
@@ -29,29 +30,45 @@ class Greetings extends React.Component {
     activePlaylist: null,
     showPlaylist: false,
     currSongIdx: null,
+    viewingPlaylist: null,
     playlists: []
   }
 
   componentDidMount() {
-    ipcRenderer.on('PLAYLISTS_LOADED', (event, data) => {
+    ipcRenderer.on('playlists:loaded', (event, data) => {
       this.setState({ playlists: data.playlists })
     })
 
-    ipcRenderer.on('PLAYLIST_LOAD', (_, pl: PlaylistInterface) => {
+    ipcRenderer.on('playlist:load', (_, pl: PlaylistInterface) => {
+      const update: State = this.state
+      update.viewingPlaylist = pl
+      // TODO only update this if not currently playing a playlist
+      update.activePlaylist = pl
+      console.log(update)
+      this.setState(update)
+    })
+
+    ipcRenderer.on('playlists:url-load', (_, data: { url: string}) => {
+      const pl = new Playlist({ title: [''], link: [data.url] })
       this.setState({ activePlaylist: pl })
     })
+
+    ipcRenderer.send('playlists:ready')
   }
 
   selectPlaylist(pl: PlaylistInterface): void {
-    this.setState({activePlaylist: pl})
+    const update: State = this.state
+    update.viewingPlaylist = pl
+    update.activePlaylist = update.activePlaylist || pl
+    this.setState(update)
   }
 
   clearPlaylist() {
-    this.setState({activePlaylist: null})
+    this.setState({ viewingPlaylist: null })
   }
 
   renderPlaylist() {
-    return <PlaylistView currSongIdx={this.state.currSongIdx} playlist={this.state.activePlaylist!} backClick={this.clearPlaylist.bind(this)} />
+    return <PlaylistView currSongIdx={this.state.currSongIdx} playlist={this.state.viewingPlaylist!} backClick={this.clearPlaylist.bind(this)} />
   }
 
   setCurrSong(idx: number) {
@@ -59,16 +76,16 @@ class Greetings extends React.Component {
   }
 
   renderPlaylistStyle(): React.CSSProperties {
-    const styles = this.state.activePlaylist?.style
+    const styles = this.state.viewingPlaylist?.style
+    const cssProps: React.CSSProperties = {}
     if (styles) {
-      return {
-        backgroundImage: styles!['background-image'],
-        backgroundColor: styles!['background-color'],
-        color: styles!.color,
-        fontFamily: styles!['font-family']
-      }
+      cssProps.backgroundImage = styles!['background-image']
+      cssProps.backgroundColor = styles!['background-color']
+      cssProps.color = styles!.color
+      cssProps.fontFamily = styles!['font-family']
     }
-    return {}
+
+    return cssProps
   }
 
   renderPlayer() {
@@ -82,23 +99,17 @@ class Greetings extends React.Component {
     return (
       <div style={{height: "100%"}}>
         <TitleSection>
+          <div />
           <LogoSection>
             <Image src={imgSrc} />
           </LogoSection>
-          <ListSelectSection>
-            {/* <Subtitle>Latest Archives</Subtitle> */}
-            <StreamSelect defaultValue={"latest"}>
-              <option value="latest">Latest archives</option>
-            </StreamSelect>
-          </ListSelectSection>
           {/* Add donate link */}
         </TitleSection>
-        <Container style={this.renderPlaylistStyle()}>
+        <Container style={this.renderPlaylistStyle()} full={!this.state.activePlaylist?.mp3Url}>
           {
-            this.state.activePlaylist == null ?
-              <TrayView playlists={this.state.playlists} clickHandler={this.selectPlaylist.bind(this)} />
-              :
-              this.renderPlaylist()
+            this.state.viewingPlaylist == null
+              ? <TrayView playlists={this.state.playlists} clickHandler={this.selectPlaylist.bind(this)} />
+              : this.renderPlaylist()
           }
         </Container>
         {this.renderPlayer()}

@@ -116,6 +116,9 @@ export default class Player extends React.Component<Props, State> {
     }.bind(this), 500)
   }
 
+
+  // TODO: stop howl and unload on playlist change
+
   // TODO: can't scrub to first or last track
   getTrackFromTs(): number {
     const playlist = this.props.playlist

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
+import { app, BrowserWindow, ipcMain, globalShortcut, protocol } from 'electron'
 import * as path from 'path'
 import * as url from 'url'
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
@@ -7,6 +7,7 @@ import TrayGenerator from "./tray";
 
 import PlaylistFeed from './feed';
 import Playlist, { fetchPlaylistInfo, fetchPlaylistFile } from './playlist'
+import { electron } from 'process';
 
 //TODO
 // require('crash-reporter').start();
@@ -20,7 +21,8 @@ function createWindow () {
     show: false,
     alwaysOnTop: true,
     resizable: false,
-    frame: false,
+    // frame: false,
+    titleBarStyle: 'hidden',
     backgroundColor: '#191622',
     webPreferences: {
       nodeIntegration: true
@@ -40,33 +42,47 @@ function createWindow () {
   }
 
   mainWindow.on('show', () => {
-    const fr = new PlaylistFeed()
-    fr.fetchFeed()
-      .then((playlists: Playlist[]) => {
-        mainWindow?.webContents.send('PLAYLISTS_LOADED', { playlists })
-      })
   });
 
   mainWindow.on('blur', () => {
     // mainWindow?.hide()
   })
 
-  ipcMain.on('PLAYLIST_SHOW', (evt, args: {playlist: Playlist}) => {
+  ipcMain.on('playlists:ready', () => {
+    const fr = new PlaylistFeed()
+    fr.fetchFeed()
+      .then((playlists: Playlist[]) => {
+        mainWindow?.webContents.send('playlists:loaded', { playlists })
+      })
+  })
+
+  ipcMain.on('playlist:show', (evt, args: {playlist: Playlist}) => {
     fetchPlaylistInfo(args.playlist)
       .then((pl: Playlist) => {
-        evt.reply('PLAYLIST_LOAD', pl)
+        evt.reply('playlist:load', pl)
         fetchPlaylistFile(pl)
           .then((pl: Playlist) => {
             // TODO use a different event here?
-            evt.reply('PLAYLIST_LOAD', pl)
+            evt.reply('playlist:load', pl)
           })
       })
   })
 }
 
+// Playlist url format: wfmu-listener://playlists?show=12345
+app.on('open-url', (evt: Electron.Event, urlStr: string) => {
+  app.show()
+  const purl = new URL(urlStr)
+  if (purl.host === 'playlists') {
+    mainWindow?.webContents.send('playlists:url-load', { url: urlStr })
+  }
+})
+
 app
   .on('ready', () => {
     createWindow()
+    // registerProtocol()
+    app.setAsDefaultProtocolClient('wfmu-listener')
     const Tray = new TrayGenerator(mainWindow!)
     Tray.createTray()
   })

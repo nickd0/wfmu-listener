@@ -28,7 +28,7 @@ export default class PlaylistView extends React.Component<Props, State> {
   state: Readonly<State> = { playlist: null }
 
   componentDidMount(): void {
-    ipcRenderer.send('PLAYLIST_SHOW', { playlist: this.props.playlist })
+    ipcRenderer.send('playlist:show', { playlist: this.props.playlist })
   }
 
   trackStyle(idx: number): React.CSSProperties {
@@ -52,7 +52,7 @@ export default class PlaylistView extends React.Component<Props, State> {
         <a href="#" onClick={this.props.backClick}>Back</a>
         <ShowName>{playlist.showName}</ShowName>
         <ShowSub>{playlist.dateStr}</ShowSub>
-        <div style={{paddingBottom: '70px'}}>
+        <div style={{paddingBottom: '20px'}}>
           {
             playlist.songs.map((s, i) => (
               <TrackContainer key={`track-${i}`} playing={i === this.props.currSongIdx} style={this.trackStyle(i)}>

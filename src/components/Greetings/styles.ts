@@ -1,19 +1,10 @@
-import styled, { keyframes } from 'styled-components'
-
-const rotate = keyframes`
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-`
+import styled from 'styled-components'
 
 export const Container = styled.div`
     padding: 25px;
     padding-bottom: 0;
     overflow-y: scroll;
-    height: 510px;
+    height: ${props => (props.full ? '100%' : 'calc(100% - 180px)')};
 `
 
 export const Image = styled.img`
@@ -36,10 +27,12 @@ export const TitleSection = styled.div`
   color: #191622;
   margin: 0;
   padding-top: 1px;
-  padding: 1px 20px 3px 20px;
+  padding: 10px 20px 3px 20px;
   height: 90px;
   display: flex;
   align-items: center;
+  -webkit-app-region: drag;
+  -webkit-user-select: none;
 `
 
 export const LogoSection = styled.div`

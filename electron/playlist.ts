@@ -78,6 +78,13 @@ export function fetchPlaylistInfo(playlist: Playlist): Promise<Playlist> {
       return new Promise((resolve) => {
         const $ = cheerio.load(text)
 
+        if (playlist.showName === '--') {
+          let titleText = $('h2').first().text().trim().replace(/\n+/g, ' ')
+          let [showName, dateStr] = scrapeTitle(titleText)
+          playlist.showName = showName
+          playlist.dateStr = dateStr
+        }
+
         // Scrape playlist page
         $('tr[id^="drop_"]').each((i, el) => {
           const dat = $(el)
@@ -112,6 +119,16 @@ export function fetchPlaylistInfo(playlist: Playlist): Promise<Playlist> {
     })
 }
 
+const scrapeTitle = (title: string): [string, string] => {
+  const matches = title.match(/(.*): (.*) from (.*)$/)
+
+  if (matches?.[2] === 'Playlist') {
+    return [matches?.[1] ?? '--', matches?.[3] ?? '--']
+  }
+
+  return [matches?.[2] ?? '--', matches?.[3] ?? '--']
+}
+
 export default class Playlist implements PlaylistInterface {
   id: number;
   showName: string;
@@ -123,12 +140,12 @@ export default class Playlist implements PlaylistInterface {
   style: unknown;
   loaded: boolean;
 
-  constructor(obj: PlaylistRawObject) {
-    const title = obj.title[0]
-    const matches = title.match(/: (.*) from (.*)$/)
+  constructor(obj: PlaylistRawObject | null) {
+    const title = obj?.title[0]
 
-    this.showName = matches?.[1] ?? '--'
-    this.dateStr = matches?.[2] ?? '--'
+    const [showName, dateStr] = scrapeTitle(title ?? '')
+    this.showName = showName
+    this.dateStr = dateStr
 
     // TODO
     this.streamUrl = obj.link[0]
