@@ -1,6 +1,10 @@
 import { Howl } from 'howler'
+import { ipcRenderer } from 'electron'
 import React from 'react'
 import PlaylistInterface from '../../../interfaces/playlist'
+
+
+// TODO: player has a Howl for each playlist
 
 import {
   PlayerContainer, PlayerControlsContainer, PlayerInfo,
@@ -23,6 +27,7 @@ enum PlayerState {
   Paused
 }
 
+// Integrate this state into redux
 interface State {
   playerReady: boolean,
   status: PlayerState,
@@ -37,6 +42,8 @@ export default class Player extends React.Component<Props, State> {
   howl: Howl | null;
   tickTimer: number | null;
   trackScroller: HTMLDivElement | null;
+  trackScrollPause: number;
+  trackScrollWait: Boolean;
 
   state: Readonly<State> = {
     playerReady: false,
@@ -53,6 +60,8 @@ export default class Player extends React.Component<Props, State> {
     this.howl = null
     this.tickTimer = null
     this.trackScroller = null
+    this.trackScrollPause = 0
+    this.trackScrollWait = false
   }
 
   componentDidMount(): void {
@@ -106,16 +115,57 @@ export default class Player extends React.Component<Props, State> {
 
       let { trackNameLeft, trackNameDir } = this.state
 
-      if (trackNameLeft <= -leftDiff || trackNameLeft >= 1) {
-        trackNameDir *= -1
+      // Switch direction
+      if ((trackNameLeft <= -leftDiff || trackNameLeft >= 1)) {
+        if (!this.trackScrollWait) {
+          this.trackScrollPause += 25
+          this.trackScrollWait = true
+          trackNameDir *= -1
+        }
       }
 
-      trackNameLeft += (10 * trackNameDir)
+      if (this.trackScrollPause > 0) {
+        this.trackScrollPause--
+      } else {
+        trackNameLeft += (1 * trackNameDir)
+        this.trackScrollWait = false
+      }
 
       this.setState({ trackNameLeft, trackNameDir })
-    }.bind(this), 500)
+    }.bind(this), 50)
+
+    // Global media control
+    ipcRenderer.on('playback:playpause', (e) => {
+      console.log(e)
+      _this.toggleMedia()
+    })
+
+    ipcRenderer.on('playback:next', (e) => {
+      console.log(e)
+      _this.skip(1)
+    })
+
+    ipcRenderer.on('playback:prev', (e) => {
+      console.log(e)
+      _this.skip(-1)
+    })
+
+    window.addEventListener('keypress', (e) => {
+      if (e.key === ' ') {
+        e.preventDefault()
+        _this.toggleMedia()
+      }
+    })
   }
 
+  // componentDidUpdate(prevProps: Readonly<Props>): void {
+  //   if (this.props.playlist.id !== prevProps.)
+  // }
+
+  componentWillUnmount() {
+    this.howl?.unload()
+    this.howl = null
+  }
 
   // TODO: stop howl and unload on playlist change
 
@@ -205,6 +255,10 @@ export default class Player extends React.Component<Props, State> {
 
   endScrubbing() {
     this.setTrack(this.getTrackFromTs(), true)
+  }
+
+  killPlayer() {
+    // stop media and clean
   }
 
   render() {

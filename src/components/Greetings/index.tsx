@@ -10,12 +10,12 @@ import {
 
 import Player from '../Player'
 
-import TrayView from "../Tray";
-import PlaylistView from "../Playlist";
+import TrayView from '../Tray'
+import PlaylistView from '../Playlist'
 import { ipcRenderer } from 'electron'
 
 import imgSrc from '../../../assets/main-logo.png'
-import Playlist, { PlaylistRawObject } from "../../../electron/playlist";
+import Playlist from '../../../electron/playlist'
 
 interface State {
   activePlaylist: PlaylistInterface | null,
@@ -43,8 +43,9 @@ class Greetings extends React.Component {
       const update: State = this.state
       update.viewingPlaylist = pl
       // TODO only update this if not currently playing a playlist
-      update.activePlaylist = pl
-      console.log(update)
+      if (update.activePlaylist?.id === pl.id) {
+        update.activePlaylist = pl
+      }
       this.setState(update)
     })
 
@@ -67,8 +68,19 @@ class Greetings extends React.Component {
     this.setState({ viewingPlaylist: null })
   }
 
+  trackSelect(plId: number, trackIdx: number) {
+    if (plId === this.state.activePlaylist?.id) {
+      this.setCurrSong(trackIdx)
+    }
+  }
+
   renderPlaylist() {
-    return <PlaylistView currSongIdx={this.state.currSongIdx} playlist={this.state.viewingPlaylist!} backClick={this.clearPlaylist.bind(this)} />
+    return <PlaylistView
+      currSongIdx={this.state.currSongIdx}
+      playlist={this.state.viewingPlaylist!}
+      backClick={this.clearPlaylist.bind(this)}
+      onTrackSelect={this.trackSelect.bind(this)}
+    />
   }
 
   setCurrSong(idx: number) {

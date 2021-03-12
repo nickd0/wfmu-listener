@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
+import { app, BrowserWindow, ipcMain, globalShortcut, systemPreferences } from 'electron'
 import * as path from 'path'
 import * as url from 'url'
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
@@ -100,6 +100,24 @@ app.on('open-url', (evt: Electron.Event, urlStr: string) => {
 
 app
   .on('ready', () => {
+    // Ask for accessibility
+    systemPreferences.isTrustedAccessibilityClient(true)
+
+    globalShortcut.register('MediaPlayPause', function () {
+      log.debug('mediaplaypause pressed')
+      mainWindow?.webContents.send('playback:playpause')
+    })
+
+    globalShortcut.register('medianexttrack', function () {
+      log.debug('medianexttrack pressed')
+      mainWindow?.webContents.send('playback:next')
+    })
+
+    globalShortcut.register('mediaprevioustrack', function () {
+      log.debug('mediaprevioustrack pressed')
+      mainWindow?.webContents.send('playback:prev')
+    })
+
     createWindow()
     // registerProtocol()
     app.setAsDefaultProtocolClient('wfmu-listener')
@@ -120,14 +138,6 @@ app
 
 // media controls
 
-let registered = globalShortcut.register('mediaplaypause', function () {
-  console.log('mediaplaypause pressed')
-})
-if (!registered) {
-  console.log('mediaplaypause registration failed')
-} else {
-  console.log('mediaplaypause registration bound!')
-}
 
 
 

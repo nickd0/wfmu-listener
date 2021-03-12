@@ -10,14 +10,15 @@
 - [ ] Filter recent archives by your favorite shows
 - [x] When on playlist page, user can choose to display the playlist's style or default
 - [x] Stream archive file (using Howler?)
-- [ ] Player control; Playback continues while navigating back to feed page
+- [x] Player control; Playback continues while navigating back to feed page
 - [ ] Redux (especially for managing player state)
+- [ ] Click track to skip to it
 - [ ] Styling
 - [ ] Tests
 - [ ] view more than just xml feed since its only the last few days?
 - [ ] Timeouts and error handling
 - [ ] Cleanup, revamp electron, model, interface files
-- [ ] Integrate media controls
+- [x] Integrate media controls
   - See https://github.com/electron/electron/issues/5268
   - https://github.com/MarshallOfSound/electron-media-service
   - https://github.com/MarshallOfSound/Google-Play-Music-Desktop-Player-UNOFFICIAL-
@@ -28,6 +29,9 @@
 ## v0.2.0
 - [ ] Sharable show recommendation files that include a playlist id and specific tracks
 - [ ] Integrate media controls
+  - https://github.com/ytmdesktop/ytmdesktop/blob/master/main.js
+  - https://github.com/dbusjs/mpris-service for linux
+  - @nodert-win10/windows.media for win10
   - See https://github.com/electron/electron/issues/5268
   - https://github.com/MarshallOfSound/electron-media-service
   - https://github.com/MarshallOfSound/Google-Play-Music-Desktop-Player-UNOFFICIAL-

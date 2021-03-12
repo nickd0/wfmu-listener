@@ -16,7 +16,8 @@ interface State {
 interface Props {
   playlist: PlaylistInterface,
   currSongIdx: number | null,
-  backClick: () => void
+  backClick: () => void,
+  onTrackSelect: (plId: number, idx: number) => void
 }
 
 // On load, send IPC to load tracks
@@ -56,7 +57,7 @@ export default class PlaylistView extends React.Component<Props, State> {
           {
             playlist.songs.map((s, i) => (
               <TrackContainer key={`track-${i}`} playing={i === this.props.currSongIdx} style={this.trackStyle(i)}>
-                <TrackSubcontainer>
+                <TrackSubcontainer onClick={this.props.onTrackSelect.bind(playlist.id, i)}>
                   <SongTitleText>{s.title}</SongTitleText>
                   <SongArtistText>{s.artist}</SongArtistText>
                 </TrackSubcontainer>

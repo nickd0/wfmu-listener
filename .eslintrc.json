@@ -33,7 +33,10 @@
         "ts": "never",
         "tsx": "never"
       }
-    ]
+    ],
+    // Allow for optional chaining
+    "no-unused-expressions": "off",
+    "@typescript-eslint/no-unused-expressions": 2,
   },
   "settings": {
     "import/resolver": {
