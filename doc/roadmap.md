@@ -22,9 +22,8 @@
   - See https://github.com/electron/electron/issues/5268
   - https://github.com/MarshallOfSound/electron-media-service
   - https://github.com/MarshallOfSound/Google-Play-Music-Desktop-Player-UNOFFICIAL-
-  - Structure/organization
-    - src/main and src/renderer
-  - Emitter for control between front and backend
+- [ ] Structure/organization
+  - [ ] src/main and src/renderer
 
 ## v0.2.0
 - [ ] Sharable show recommendation files that include a playlist id and specific tracks
