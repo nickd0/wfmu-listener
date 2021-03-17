@@ -8,12 +8,13 @@
 - [x] Playlist URL capture
 - [ ] Drag and drop playlist links
 - [ ] Filter recent archives by your favorite shows
+- [ ] Skip to next playlist when one finishes
 - [x] When on playlist page, user can choose to display the playlist's style or default
 - [x] Stream archive file (using Howler?)
 - [x] Player control; Playback continues while navigating back to feed page
 - [ ] Redux (especially for managing player state)
 - [ ] Click track to skip to it
-- [ ] Styling
+- [x] Styling
 - [ ] Tests
 - [ ] view more than just xml feed since its only the last few days?
 - [ ] Timeouts and error handling
