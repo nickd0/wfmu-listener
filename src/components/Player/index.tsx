@@ -9,7 +9,8 @@ import PlaylistInterface from '../../../interfaces/playlist'
 import {
   PlayerContainer, PlayerControlsContainer, PlayerInfo,
   PlayerArtist, PlayerTrackName, PlayerPlaylist,
-  PlayerControls, PlayerInfoWrap, ScrollablePlayerInfo
+  PlayerControls, PlayerInfoWrap, ScrollablePlayerInfo,
+  ScrubberTimestampElapsed, ScrubberTimestampTotal
 } from './styles'
 import PlayerScrubber from './PlayerScrubber';
 import { Song } from '../../../electron/playlist';
@@ -109,6 +110,9 @@ export default class Player extends React.Component<Props, State> {
       clearInterval(_this.tickTimer)
     })
 
+    this.howl?.on('stop', this.resetHowl.bind(this))
+    this.howl?.on('end', this.resetHowl.bind(this))
+
     setInterval(function() {
       const leftDiff = Math.max((this.trackScroller?.clientWidth ?? 0) - 435, 0)
       if (leftDiff === 0) return
@@ -186,6 +190,11 @@ export default class Player extends React.Component<Props, State> {
     return 0
   }
 
+  resetHowl() {
+    this.toggleMedia()
+    this.moveScrubber(0)
+  }
+
   setTrackInfoRef(el: HTMLDivElement): void {
     this.trackScroller = el
   }
@@ -209,6 +218,11 @@ export default class Player extends React.Component<Props, State> {
     // TODO: On back, play current track from beginning, double click, skip to prev
     const newIdx = (this.state.currSongIdx ?? 0) + dir
     const nextSong = this.props.playlist.songs[newIdx]
+    // if (this.props.playlist.songs.length === 0) {
+    //   // TODO handle at beginning or end
+    //   let newETime = this.state.eTime + dir * 10
+    //   this.setState({eTime: newETime}, (() => {this.howl?.seek(newETime)}).bind(this))
+    // } else if (nextSong?.timestamp) {
     if (nextSong?.timestamp) {
       this.howl?.seek(nextSong?.timestamp)
       this.setTrackDisplay(newIdx, nextSong?.timestamp)
@@ -229,6 +243,10 @@ export default class Player extends React.Component<Props, State> {
       this.howl?.seek(time)
       this.setTrackDisplay(idx, time)
       this.props.setCurrSong(idx)
+
+    } else if (this.props.playlist.songs.length == 0) {
+      // Trackless playlist, just seek to the ts
+      this.howl?.seek(this.state.eTime)
     }
   }
 
@@ -237,10 +255,16 @@ export default class Player extends React.Component<Props, State> {
     return (
       <PlayerInfo>
         <PlayerInfoWrap>
-          <ScrollablePlayerInfo ref={this.setTrackInfoRef.bind(this)} style={{left: this.state.trackNameLeft}}>
-            <PlayerTrackName>{song?.title ?? '--'}</PlayerTrackName>
-            <PlayerArtist>{song?.artist ?? '--'}</PlayerArtist>
-          </ScrollablePlayerInfo>
+          {
+            this.props.playlist.songs.length
+            ? (
+              <ScrollablePlayerInfo ref={this.setTrackInfoRef.bind(this)} style={{left: this.state.trackNameLeft}}>
+                <PlayerTrackName>{song?.title ?? '--'}</PlayerTrackName>
+                <PlayerArtist>{song?.artist ?? '--'}</PlayerArtist>
+              </ScrollablePlayerInfo>
+            )
+            : null
+          }
           <PlayerPlaylist>{this.props.playlist?.showName ?? '--'}</PlayerPlaylist>
         </PlayerInfoWrap>
       </PlayerInfo>
@@ -261,7 +285,19 @@ export default class Player extends React.Component<Props, State> {
     // stop media and clean
   }
 
+  timestampString(ts: number): string {
+    var tsDiv = ts
+    
+    let hours = ~~(ts / 3600)
+    let minMod = ts % 3600
+    let mins = ~~(minMod / 60)
+    let secs = ~~(minMod % 60)
+
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
   render() {
+    const continuousPlaylist = this.props.playlist.songs.length === 0
     return (
       <PlayerContainer className={this.state.playerReady ? 'ready' : ''}>
         { this.renderPlayerInfo() }
@@ -270,19 +306,26 @@ export default class Player extends React.Component<Props, State> {
             <a
               href='#'
               onClick={this.skip.bind(this, -1)}
-              className="oi" data-glyph="media-step-backward">
-            </a>
+              className="oi"
+              data-glyph={continuousPlaylist ? 'arrow-left' : 'media-step-backward'}
+              title={continuousPlaylist ? 'Skip 10 seconds back' : 'Previous track'}
+            />
             <a
               onClick={this.toggleMedia.bind(this)}
-              href="#" className="oi"
+              href="#"
+              className="oi"
               data-glyph={`media-${this.state.status === PlayerState.Playing ? 'pause' : 'play'}`}
+              title={this.state.status === PlayerState.Playing ? 'Pause' : 'Play'}
             />
             <a
               href='#'
               onClick={this.skip.bind(this, 1)}
-              className="oi" data-glyph="media-step-forward">
-            </a>
+              className="oi"
+              data-glyph={continuousPlaylist ? 'arrow-right' : 'media-step-forward'}
+              title={continuousPlaylist ? 'Skip 10 seconds' : 'Next track'}
+            />
           </PlayerControls>
+          <ScrubberTimestampElapsed>{this.timestampString(this.state.eTime)}</ScrubberTimestampElapsed>
           <PlayerScrubber onScrubberEnd={this.endScrubbing.bind(this)} onScrubberMove={this.moveScrubber.bind(this)} duration={this.state.duration} eTime={this.state.eTime} />
         </PlayerControlsContainer>
       </PlayerContainer>

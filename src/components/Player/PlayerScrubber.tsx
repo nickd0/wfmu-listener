@@ -1,7 +1,7 @@
 import React from 'react'
 import { ProgressPlugin } from 'webpack'
 import { extends } from '../../../commitlint.config'
-import { ScrubberContainer, ScrubberLine, ScrubberHandle } from './styles'
+import { ScrubberContainer, ScrubberLine, ScrubberHandle, ScrubberTimestampElapsed } from './styles'
 
 // TODO: drag scrub handle
 // https://stackoverflow.com/questions/20926551/recommended-way-of-making-react-component-div-draggable

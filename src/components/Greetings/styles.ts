@@ -4,7 +4,7 @@ export const Container = styled.div`
     padding: 25px;
     padding-bottom: 0;
     overflow-y: scroll;
-    height: ${props => (props.full ? '100%' : 'calc(100% - 180px)')};
+    height: ${props => (props.full ? '100%' : 'calc(100% - 140px)')};
 `
 
 export const Image = styled.img`

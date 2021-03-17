@@ -3,7 +3,7 @@ import PlaylistInterface from '../../../interfaces/playlist'
 import { ShowName, ShowSub } from '../../styles/GlobalStyle'
 import {
   TrackContainer, SongArtistText, SongTitleText,
-  TrackSubcontainer, TrackTSContainer, ImgLoader
+  TrackSubcontainer, TrackTSContainer, ImgLoader, BackButton
 } from './styles'
 import { ipcRenderer, clipboard } from 'electron'
 import imgSrc from '../../../assets/wfmu-loader.png'
@@ -50,7 +50,12 @@ export default class PlaylistView extends React.Component<Props, State> {
     return (
       <div>
         {playlist.loaded ? null : <ImgLoader src={imgSrc} />}
-        <a href="#" onClick={this.props.backClick}>Back</a>
+        <BackButton
+          href='#'
+          onClick={this.props.backClick}
+          className="oi"
+          data-glyph="arrow-circle-left"
+        />
         <ShowName>{playlist.showName}</ShowName>
         <ShowSub>{playlist.dateStr}</ShowSub>
         <div style={{paddingBottom: '20px'}}>

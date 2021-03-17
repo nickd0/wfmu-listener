@@ -2,6 +2,7 @@ import styled from 'styled-components'
 
 export const PlayerControlsContainer = styled.div`
   background-color: white;
+  box-shadow: -1px 5px 20px 0px black;
   height: 45px;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
@@ -42,7 +43,7 @@ export const PlayerInfo = styled.div`
   position: relative;
   z-index: 0;
 
-  // top: 45px;
+  top: 40px;
 
   transition: top 0.2s;
 `
@@ -82,16 +83,34 @@ export const PlayerContainer = styled.div`
     bottom: 0;
   }
 
+  &:hover ${PlayerInfo} {
+    top: 0
+  }
+
   transition: bottom 0.2s;
 `
 
-export const ScrubberContainer = styled.div`
+export const ScrubberTimestamp = styled.span`
+  font-size: 0.8em;
+
+`
+
+export const ScrubberTimestampElapsed = styled(ScrubberTimestamp)`
   order: 1;
+`
+
+export const ScrubberTimestampTotal = styled(ScrubberTimestamp)`
+  order: 3;
+`
+
+export const ScrubberContainer = styled.div`
+  order: 2;
   width: 67%;
   position: relative;
   display: flex;
   height: 100%;
-  align-items: center
+  align-items: center;
+  margin-left: 5px
 `
 export const ScrubberLine = styled.div`
   width: 100%;

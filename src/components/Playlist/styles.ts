@@ -55,3 +55,14 @@ export const ImgLoader = styled.img`
   top: 200px;
   width: 200px;
 `
+
+export const BackButton = styled.div`
+  position: fixed;
+  padding: 7px 10px;
+  background: mintcream;
+  border-radius: 5px;
+  left: 0;
+  top: 80px;
+  color: #191622 !important;
+  cursor: pointer;
+`
