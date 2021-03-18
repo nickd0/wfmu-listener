@@ -38,7 +38,7 @@
 - [ ] Live listening
 - [ ] Persist currently playing playlist, timestamp, favorites, etc
 
-## v0.3.0
+## v1.0.0
 - [ ] Spotify integration, save to playlists, etc
 - [ ] MacOS touchbar integration: https://www.electronjs.org/docs/api/touch-bar
 - [ ] Live listening with accuplaylist comments integration
