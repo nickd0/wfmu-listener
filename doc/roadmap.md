@@ -8,8 +8,10 @@
 - [x] When on playlist page, user can choose to display the playlist's style or default
 - [x] Stream archive file (using Howler?)
 - [x] Player control; Playback continues while navigating back to feed page
-- [ ] Redux (especially for managing player state)
-- [ ] Click track to skip to it
+- [ ] ~~Redux (especially for managing player state)~~
+  - Use Emitter for now for simplicity
+- [x] Click track to skip to it
+- [ ] Play a different playlist while playing
 - [x] Styling
 - [ ] Tests
 - [ ] Timeouts and error handling

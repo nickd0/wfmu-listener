@@ -13,7 +13,7 @@ import {
   ScrubberTimestampElapsed, ScrubberTimestampTotal
 } from './styles'
 import PlayerScrubber from './PlayerScrubber';
-import { Song } from '../../../electron/playlist';
+import SystemEmitter, { PlaybackTrackSelectAction, EMITTER_PLAYBACK_TRACK_SELECT } from '../../services/emitter'
 
 interface Props {
   streamUrl: string,
@@ -66,10 +66,12 @@ export default class Player extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
+    // TODO: use SystemEmitter to track when a playlist is selected for playing
+    // and manage state from here
     this.howl = new Howl({
       src: [this.props.streamUrl],
       format: ['mp3'],
-      volume: 0.8,
+      volume: 1,
       html5: true,
       preload: true
     })
@@ -159,6 +161,11 @@ export default class Player extends React.Component<Props, State> {
         e.preventDefault()
         _this.toggleMedia()
       }
+    })
+
+    // Render-side events
+    SystemEmitter.on(EMITTER_PLAYBACK_TRACK_SELECT, (trackAction: PlaybackTrackSelectAction) => {
+      this.setTrack(trackAction.trackIdx)
     })
   }
 

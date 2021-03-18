@@ -80,6 +80,7 @@ class Greetings extends React.Component {
       playlist={this.state.viewingPlaylist!}
       backClick={this.clearPlaylist.bind(this)}
       onTrackSelect={this.trackSelect.bind(this)}
+      isPlaying={this.state.viewingPlaylist?.id === this.state.activePlaylist?.id}
     />
   }
 
@@ -102,7 +103,11 @@ class Greetings extends React.Component {
 
   renderPlayer() {
     if (this.state.activePlaylist?.mp3Url != null) {
-      return <Player setCurrSong={this.setCurrSong.bind(this)} playlist={this.state.activePlaylist!} streamUrl={this.state.activePlaylist!.mp3Url!} />
+      return <Player
+        setCurrSong={this.setCurrSong.bind(this)}
+        playlist={this.state.activePlaylist!}
+        streamUrl={this.state.activePlaylist!.mp3Url!}
+      />
     }
     return null
   }

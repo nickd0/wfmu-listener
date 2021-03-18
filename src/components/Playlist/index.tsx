@@ -8,6 +8,7 @@ import {
 import { ipcRenderer, clipboard } from 'electron'
 import imgSrc from '../../../assets/wfmu-loader.png'
 import Player from '../Player'
+import SystemEmitter, { EMITTER_PLAYBACK_TRACK_SELECT } from '../../services/emitter'
 
 interface State {
   playlist: PlaylistInterface | null
@@ -16,6 +17,7 @@ interface State {
 interface Props {
   playlist: PlaylistInterface,
   currSongIdx: number | null,
+  isPlaying: Boolean,
   backClick: () => void,
   onTrackSelect: (plId: number, idx: number) => void
 }
@@ -33,14 +35,22 @@ export default class PlaylistView extends React.Component<Props, State> {
   }
 
   trackStyle(idx: number): React.CSSProperties {
-    if (idx == this.props.currSongIdx) {
-      const pl = this.props.playlist
+    const pl = this.props.playlist
+    if (idx === this.props.currSongIdx && this.props.isPlaying) {
       return {
         color: pl.style['background-color'] || 'inherit',
         backgroundColor: pl.style.color || 'inherit'
       }
     } else {
       return {}
+    }
+  }
+
+  trackSelect(playlistId: number, trackIdx: number) {
+    if (this.props.isPlaying || confirm('Play from this playlist?')) {
+      if (playlistId === this.props.playlist.id) {
+        SystemEmitter.emit(EMITTER_PLAYBACK_TRACK_SELECT, { playlistId, trackIdx })
+      }
     }
   }
 
@@ -51,7 +61,6 @@ export default class PlaylistView extends React.Component<Props, State> {
       <div>
         {playlist.loaded ? null : <ImgLoader src={imgSrc} />}
         <BackButton
-          href='#'
           onClick={this.props.backClick}
           className="oi"
           data-glyph="arrow-circle-left"
@@ -61,8 +70,13 @@ export default class PlaylistView extends React.Component<Props, State> {
         <div style={{paddingBottom: '20px'}}>
           {
             playlist.songs.map((s, i) => (
-              <TrackContainer key={`track-${i}`} playing={i === this.props.currSongIdx} style={this.trackStyle(i)}>
-                <TrackSubcontainer onClick={this.props.onTrackSelect.bind(playlist.id, i)}>
+              <TrackContainer
+                key={`track-${i}`}
+                playing={i === this.props.currSongIdx && this.props.isPlaying}
+                style={this.trackStyle(i)}
+                onClick={this.trackSelect.bind(this, this.props.playlist.id, i)}
+              >
+                <TrackSubcontainer>
                   <SongTitleText>{s.title}</SongTitleText>
                   <SongArtistText>{s.artist}</SongArtistText>
                 </TrackSubcontainer>
