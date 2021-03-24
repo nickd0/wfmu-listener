@@ -103,6 +103,11 @@ export function fetchPlaylistInfo(playlist: Playlist): Promise<Playlist> {
           }
         })
 
+        if (playlist.streamUrl.indexOf('wfmu-listener://') !== -1) {
+          const listenPath = $('#date_desc_archive_section a')[1].href
+          playlist.streamUrl = `https://www.wfmu.org${listenPath}`
+        }
+
         const styleSheet = $('#playlist_css_additional')
         const parsed = css.parse(styleSheet.contents().text())
         const rules = parsed.stylesheet.rules.filter((r) => r.selectors.includes('BODY') || r.selectors.includes('body'))

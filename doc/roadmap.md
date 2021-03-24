@@ -33,6 +33,8 @@
   - See https://github.com/electron/electron/issues/5268
   - https://github.com/MarshallOfSound/electron-media-service
   - https://github.com/MarshallOfSound/Google-Play-Music-Desktop-Player-UNOFFICIAL-
+- [ ] Redux (especially for managing player state)
+  - Clean up ipc and logic around track selection and new playlist
 - [ ] Live listening
 - [ ] Skip to next playlist when one finishes
 - [ ] Drag and drop playlist links

@@ -18,8 +18,7 @@ interface Props {
   playlist: PlaylistInterface,
   currSongIdx: number | null,
   isPlaying: Boolean,
-  backClick: () => void,
-  onTrackSelect: (plId: number, idx: number) => void
+  backClick: () => void
 }
 
 // On load, send IPC to load tracks
