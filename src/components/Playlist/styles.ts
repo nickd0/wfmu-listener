@@ -9,10 +9,11 @@ export const TrackContainer = styled.div`
   
   border: 1px solid transparent;
 
+  cursor: pointer;
+
   &:hover {
     border: 1px solid;
   }
-
   
     background-color: ${props => (props.playing ? 'rgba(255,255,255,0.3)' : 'none')}
   }

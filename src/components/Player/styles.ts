@@ -96,6 +96,7 @@ export const ScrubberTimestamp = styled.span`
 `
 
 export const ScrubberTimestampElapsed = styled(ScrubberTimestamp)`
+  -webkit-user-select: none;
   order: 1;
 `
 

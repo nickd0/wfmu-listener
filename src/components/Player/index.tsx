@@ -13,12 +13,13 @@ import {
   ScrubberTimestampElapsed, ScrubberTimestampTotal
 } from './styles'
 import PlayerScrubber from './PlayerScrubber';
-import { Song } from '../../../electron/playlist';
+import SystemEmitter, { PlaybackTrackSelectAction, EMITTER_PLAYBACK_TRACK_SELECT } from '../../services/emitter'
 
 interface Props {
   streamUrl: string,
   playlist: PlaylistInterface,
-  setCurrSong: (idx: number) => void
+  setCurrSong: (idx: number) => void,
+  defaultTrack: number
 }
 
 enum PlayerState {
@@ -66,52 +67,9 @@ export default class Player extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
-    this.howl = new Howl({
-      src: [this.props.streamUrl],
-      format: ['mp3'],
-      volume: 0.8,
-      html5: true,
-      preload: true
-    })
-
-    const _this = this
-
-    this.howl.once('load', function() {
-      _this.setState({
-        playerReady: true,
-        status: PlayerState.Ready,
-        duration: _this.howl?.duration() ?? 0,
-        currSongIdx: 0
-      })
-    })
-
-    this.howl.on('play', function() {
-      _this.setState({ status: PlayerState.Playing })
-      if (_this.howl?.playing()) {
-        _this.tickTimer = setInterval(() => {
-          _this.setState({ eTime: _this.state.eTime + 1 })
-          // TODO make this better, performance check here
-          // Use currIdx for this
-          const playlist = _this.props.playlist
-          playlist.songs.forEach((song, i) => {
-            if (_this.state.eTime >= (song.timestamp ?? 0)) {
-              if (_this.state.eTime < ((playlist.songs[i + 1]?.timestamp ?? 0))) {
-                _this.setState({ currSongIdx: i })
-                _this.props.setCurrSong(i)
-              }
-            }
-          })
-        }, 1000)
-      }
-    })
-
-    this.howl.on('pause', function() {
-      _this.setState({ status: PlayerState.Paused })
-      clearInterval(_this.tickTimer)
-    })
-
-    this.howl?.on('stop', this.resetHowl.bind(this))
-    this.howl?.on('end', this.resetHowl.bind(this))
+    // TODO: use SystemEmitter to track when a playlist is selected for playing
+    // and manage state from here
+    this.setupHowl()
 
     setInterval(function() {
       const leftDiff = Math.max((this.trackScroller?.clientWidth ?? 0) - 435, 0)
@@ -145,28 +103,92 @@ export default class Player extends React.Component<Props, State> {
     })
 
     ipcRenderer.on('playback:next', (e) => {
-      console.log(e)
       _this.skip(1)
     })
 
     ipcRenderer.on('playback:prev', (e) => {
-      console.log(e)
       _this.skip(-1)
     })
 
     window.addEventListener('keypress', (e) => {
       if (e.key === ' ') {
-        e.preventDefault()
         _this.toggleMedia()
       }
     })
+
+    // Render-side events
+    SystemEmitter.on(EMITTER_PLAYBACK_TRACK_SELECT, (trackAction: PlaybackTrackSelectAction) => {
+      this.setTrack(trackAction.trackIdx)
+    })
+
+    if (this.props.defaultTrack) {
+      this.setTrack(this.props.defaultTrack)
+    }
   }
+  
 
   // componentDidUpdate(prevProps: Readonly<Props>): void {
-  //   if (this.props.playlist.id !== prevProps.)
+  //   if (this.props.playlist.id !== prevProps.playlist.id) {
+  //     console.log("=== NEW PLAYLIST ===")
+  //   }
   // }
 
   componentWillUnmount() {
+    this.unloadHowl()
+  }
+
+  setupHowl() {
+    this.howl = new Howl({
+      src: [this.props.streamUrl],
+      format: ['mp3'],
+      volume: 1,
+      html5: true,
+      preload: true
+    })
+
+    const _this = this
+
+    this.howl.once('load', function() {
+      _this.setState({
+        playerReady: true,
+        status: PlayerState.Ready,
+        duration: _this.howl?.duration() ?? 0,
+        currSongIdx: 0
+      })
+    })
+
+    this.howl.on('play', function() {
+      _this.setState({ status: PlayerState.Playing })
+      if (_this.howl?.playing()) {
+        _this.tickTimer = setInterval(() => {
+          if (_this.state.status === PlayerState.Paused) return
+
+          _this.setState({ eTime: _this.state.eTime + 1 })
+          // TODO: make this better, performance check here
+          // Use currIdx for this
+          const playlist = _this.props.playlist
+          playlist.songs.forEach((song, i) => {
+            if (_this.state.eTime >= (song.timestamp ?? 0)) {
+              if (_this.state.eTime < ((playlist.songs[i + 1]?.timestamp ?? 0))) {
+                _this.setTrackDisplay(i)
+                _this.props.setCurrSong(i)
+              }
+            }
+          })
+        }, 1000)
+      }
+    })
+
+    this.howl.on('pause', function() {
+      _this.setState({ status: PlayerState.Paused })
+      // clearInterval(_this.tickTimer)
+    })
+
+    this.howl?.on('stop', this.resetHowl.bind(this))
+    this.howl?.on('end', this.resetHowl.bind(this))
+  }
+
+  unloadHowl() {
     this.howl?.unload()
     this.howl = null
   }
@@ -230,10 +252,20 @@ export default class Player extends React.Component<Props, State> {
     }
   }
 
-  setTrackDisplay(idx: number, time: number): void {
-    this.setState({
-      currSongIdx: idx, eTime: time, trackNameLeft: 0, trackNameDir: -1
-    })
+  setTrackDisplay(idx: number, time: number | null = null): void {
+    const update: State = {
+      ...this.state,
+      currSongIdx: idx
+    }
+
+    if (update.currSongIdx !== this.state.currSongIdx) {
+      update.trackNameLeft = 0
+      update.trackNameDir = -1
+    }
+
+    if (time) update.eTime = time
+
+    this.setState(update)
   }
 
   setTrack(idx: number, fromETime = false): void {

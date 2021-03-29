@@ -1,11 +1,12 @@
 // use https://blog.logrocket.com/building-a-menu-bar-application-with-electron-and-react/
 import PlaylistInterface, { PlaylistStyle } from "../../../interfaces/playlist";
 import React from 'react'
+import { PlaybackTrackSelectAction } from '../../services/emitter'
 
 import {
   Container, TitleSection, Subtitle,
   LogoSection, ListSelectSection, Image,
-  StreamSelect, DragHeader
+  StreamSelect
 } from './styles'
 
 import Player from '../Player'
@@ -16,6 +17,7 @@ import { ipcRenderer } from 'electron'
 
 import imgSrc from '../../../assets/main-logo.png'
 import Playlist from '../../../electron/playlist'
+import SystemEmitter, { EMITTER_PLAYBACK_TRACK_SELECT } from "../../services/emitter";
 
 interface State {
   activePlaylist: PlaylistInterface | null,
@@ -49,12 +51,22 @@ class Greetings extends React.Component {
       this.setState(update)
     })
 
-    ipcRenderer.on('playlists:url-load', (_, data: { url: string}) => {
+    ipcRenderer.on('playlists:url-load', (_, data: { url: string }) => {
+      const plId = (new URL(data.url)).searchParams.get('show')
+      const link = `https://www.wfmu.org/playlists/shows/${plId}`
       const pl = new Playlist({ title: [''], link: [data.url] })
-      this.setState({ activePlaylist: pl })
+      this.selectPlaylist(pl)
     })
 
     ipcRenderer.send('playlists:ready')
+
+    SystemEmitter.on(EMITTER_PLAYBACK_TRACK_SELECT, (data: PlaybackTrackSelectAction) => {
+      const playlist = this.state.playlists.find(pl => pl.id == data.playlistId)
+      if (playlist && playlist.id !== this.state.activePlaylist.id) {
+        this.setState({ activePlaylist: playlist, currSongIdx: data.trackIdx })
+        ipcRenderer.send('playlist:show', { playlist: playlist })
+      }
+    })
   }
 
   selectPlaylist(pl: PlaylistInterface): void {
@@ -68,22 +80,17 @@ class Greetings extends React.Component {
     this.setState({ viewingPlaylist: null })
   }
 
-  trackSelect(plId: number, trackIdx: number) {
-    if (plId === this.state.activePlaylist?.id) {
-      this.setCurrSong(trackIdx)
-    }
-  }
-
   renderPlaylist() {
     return <PlaylistView
       currSongIdx={this.state.currSongIdx}
       playlist={this.state.viewingPlaylist!}
       backClick={this.clearPlaylist.bind(this)}
-      onTrackSelect={this.trackSelect.bind(this)}
+      isPlaying={this.state.viewingPlaylist?.id === this.state.activePlaylist?.id}
     />
   }
 
   setCurrSong(idx: number) {
+    console.log(`TRACK ${idx}`)
     this.setState({ currSongIdx: idx })
   }
 
@@ -102,7 +109,12 @@ class Greetings extends React.Component {
 
   renderPlayer() {
     if (this.state.activePlaylist?.mp3Url != null) {
-      return <Player setCurrSong={this.setCurrSong.bind(this)} playlist={this.state.activePlaylist!} streamUrl={this.state.activePlaylist!.mp3Url!} />
+      return <Player
+        setCurrSong={this.setCurrSong.bind(this)}
+        playlist={this.state.activePlaylist!}
+        streamUrl={this.state.activePlaylist!.mp3Url!}
+        defaultTrack={this.state.currSongIdx ?? 0}
+      />
     }
     return null
   }
