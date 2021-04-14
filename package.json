@@ -78,6 +78,7 @@
   },
   "dependencies": {
     "@types/howler": "^2.2.1",
+    "@types/react-redux": "^7.1.16",
     "cheerio": "^1.0.0-rc.5",
     "css": "^3.0.0",
     "electron-log": "^4.3.2",
@@ -87,6 +88,7 @@
     "node-fetch": "^2.6.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-redux": "^7.2.3",
     "redux": "^4.0.5",
     "styled-components": "^5.1.1",
     "xml2js": "^0.4.23"

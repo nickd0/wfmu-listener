@@ -1,6 +1,13 @@
 // use https://blog.logrocket.com/building-a-menu-bar-application-with-electron-and-react/
-import PlaylistInterface, { PlaylistStyle } from "../../../interfaces/playlist";
+import PlaylistInterface from "../../../interfaces/playlist";
 import React from 'react'
+import { connect, ConnectedProps } from 'react-redux'
+import { Dispatch } from 'redux'
+import { RootState } from '../../renderer/store'
+import { UiActionTypes } from '../../renderer/store/ui/types'
+import { PlaybackActionTypes } from '../../renderer/store/playback/types'
+import { setViewingPlaylist } from '../../renderer/store/ui/actions'
+import { setPlaybackPlaylist } from '../../renderer/store/playback/actions'
 import { PlaybackTrackSelectAction } from '../../services/emitter'
 
 import {
@@ -20,16 +27,16 @@ import Playlist from '../../../electron/playlist'
 import SystemEmitter, { EMITTER_PLAYBACK_TRACK_SELECT } from "../../services/emitter";
 
 interface State {
-  activePlaylist: PlaylistInterface | null,
+  // activePlaylist: PlaylistInterface | null,
   viewingPlaylist: PlaylistInterface | null,
   showPlaylist: boolean,
   currSongIdx: number | null,
   playlists: PlaylistInterface[]
 }
 
-class Greetings extends React.Component {
+class AppContainer extends React.Component<AppContainerProps> {
   state: Readonly<State> = {
-    activePlaylist: null,
+    // activePlaylist: null,
     showPlaylist: false,
     currSongIdx: null,
     viewingPlaylist: null,
@@ -38,17 +45,22 @@ class Greetings extends React.Component {
 
   componentDidMount() {
     ipcRenderer.on('playlists:loaded', (event, data) => {
+      // FIXME redux
       this.setState({ playlists: data.playlists })
     })
 
     ipcRenderer.on('playlist:load', (_, pl: PlaylistInterface) => {
-      const update: State = this.state
-      update.viewingPlaylist = pl
+      // const update: State = this.state
+      // update.viewingPlaylist = pl
       // TODO only update this if not currently playing a playlist
-      if (update.activePlaylist?.id === pl.id) {
-        update.activePlaylist = pl
+      // if (update.activePlaylist?.id === pl.id) {
+      //   update.activePlaylist = pl
+      // }
+      // this.setState(update)
+      this.props.setActivePlaylist(pl)
+      if (this.props.playbackPlaylist?.id == pl.id || this.props.playbackPlaylist == null) {
+        this.props.setPlaybackPlaylist(pl)
       }
-      this.setState(update)
     })
 
     ipcRenderer.on('playlists:url-load', (_, data: { url: string }) => {
@@ -60,20 +72,21 @@ class Greetings extends React.Component {
 
     ipcRenderer.send('playlists:ready')
 
-    SystemEmitter.on(EMITTER_PLAYBACK_TRACK_SELECT, (data: PlaybackTrackSelectAction) => {
-      const playlist = this.state.playlists.find(pl => pl.id == data.playlistId)
-      if (playlist && playlist.id !== this.state.activePlaylist.id) {
-        this.setState({ activePlaylist: playlist, currSongIdx: data.trackIdx })
-        ipcRenderer.send('playlist:show', { playlist: playlist })
-      }
-    })
+    // SystemEmitter.on(EMITTER_PLAYBACK_TRACK_SELECT, (data: PlaybackTrackSelectAction) => {
+    //   const playlist = this.state.playlists.find(pl => pl.id == data.playlistId)
+    //   if (playlist && playlist.id !== this.props.playlist.id) {
+    //     this.setState({ activePlaylist: playlist, currSongIdx: data.trackIdx })
+    //     ipcRenderer.send('playlist:show', { playlist: playlist })
+    //   }
+    // })
   }
 
   selectPlaylist(pl: PlaylistInterface): void {
-    const update: State = this.state
-    update.viewingPlaylist = pl
-    update.activePlaylist = update.activePlaylist || pl
-    this.setState(update)
+    // const update: State = this.state
+    // update.viewingPlaylist = pl
+    // update.activePlaylist = update.activePlaylist || pl
+    // this.setState(update)
+    this.props.setActivePlaylist(pl)
   }
 
   clearPlaylist() {
@@ -83,19 +96,18 @@ class Greetings extends React.Component {
   renderPlaylist() {
     return <PlaylistView
       currSongIdx={this.state.currSongIdx}
-      playlist={this.state.viewingPlaylist!}
+      playlist={this.props.playlist!}
       backClick={this.clearPlaylist.bind(this)}
-      isPlaying={this.state.viewingPlaylist?.id === this.state.activePlaylist?.id}
+      isPlaying={this.props.playlist?.id === this.props.playlist?.id}
     />
   }
 
   setCurrSong(idx: number) {
-    console.log(`TRACK ${idx}`)
     this.setState({ currSongIdx: idx })
   }
 
   renderPlaylistStyle(): React.CSSProperties {
-    const styles = this.state.viewingPlaylist?.style
+    const styles = this.props.playlist?.style
     const cssProps: React.CSSProperties = {}
     if (styles) {
       cssProps.backgroundImage = styles!['background-image']
@@ -108,13 +120,9 @@ class Greetings extends React.Component {
   }
 
   renderPlayer() {
-    if (this.state.activePlaylist?.mp3Url != null) {
-      return <Player
-        setCurrSong={this.setCurrSong.bind(this)}
-        playlist={this.state.activePlaylist!}
-        streamUrl={this.state.activePlaylist!.mp3Url!}
-        defaultTrack={this.state.currSongIdx ?? 0}
-      />
+    if (this.props.playbackPlaylist?.mp3Url != null) {
+      // FIXME redux
+      return <Player/>
     }
     return null
   }
@@ -129,11 +137,11 @@ class Greetings extends React.Component {
           </LogoSection>
           {/* Add donate link */}
         </TitleSection>
-        <Container style={this.renderPlaylistStyle()} full={!this.state.activePlaylist?.mp3Url}>
+        <Container style={this.renderPlaylistStyle()} full={!this.props.playlist?.mp3Url}>
           {
-            this.state.viewingPlaylist == null
+            this.props.playlist == null
               ? <TrayView playlists={this.state.playlists} clickHandler={this.selectPlaylist.bind(this)} />
-              : this.renderPlaylist()
+              : <PlaylistView />
           }
         </Container>
         {this.renderPlayer()}
@@ -142,4 +150,21 @@ class Greetings extends React.Component {
   }
 }
 
-export default Greetings
+const mapStateToProps = (state: RootState) => ({
+  playlist: state.ui.playlist,
+  playbackPlaylist: state.playback.playlist
+})
+
+const mapDispatchToProps = (dispatch: Dispatch<UiActionTypes | PlaybackActionTypes>) => ({
+  setActivePlaylist: (playlist: PlaylistInterface) => dispatch(setViewingPlaylist(playlist)),
+  setPlaybackPlaylist: (playlist: PlaylistInterface) => dispatch(setPlaybackPlaylist(playlist))
+})
+
+const connector = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)
+
+type AppContainerProps = ConnectedProps<typeof connector>
+
+export default connector(AppContainer)

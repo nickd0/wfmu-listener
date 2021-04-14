@@ -1,4 +1,4 @@
-import SongInterface from "./song";
+import SongInterface from "./song"
 
 export interface PlaylistStyle {
   backgroundColor: string | undefined;

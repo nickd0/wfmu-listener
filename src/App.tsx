@@ -2,7 +2,9 @@ import React from 'react'
 import { render } from 'react-dom'
 import { GlobalStyle } from './styles/GlobalStyle'
 
-import Greetings from './components/Greetings'
+import AppContainer from './components/AppContainer'
+import { Provider } from 'react-redux'
+import store from './renderer/store'
 
 const mainElement = document.createElement('div')
 mainElement.setAttribute('id', 'root')
@@ -12,9 +14,15 @@ const App = () => {
   return (
     <>
       <GlobalStyle />
-      <Greetings />
+      <AppContainer />
     </>
   )
 }
 
-render(<App />, mainElement)
+const Root = () => (
+  <Provider store={store}>
+    <App />
+  </Provider>
+)
+
+render(<Root />, mainElement)

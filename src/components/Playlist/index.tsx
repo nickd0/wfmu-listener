@@ -10,15 +10,15 @@ import imgSrc from '../../../assets/wfmu-loader.png'
 import Player from '../Player'
 import SystemEmitter, { EMITTER_PLAYBACK_TRACK_SELECT } from '../../services/emitter'
 
+import { connect, ConnectedProps } from 'react-redux'
+import { Dispatch } from 'redux'
+import { RootState } from '../../renderer/store'
+import { PlaybackActionTypes, PlayerState } from '../../renderer/store/playback/types'
+import { setViewingPlaylist } from '../../renderer/store/ui/actions'
+import { UiActionTypes } from '../../renderer/store/ui/types'
+
 interface State {
   playlist: PlaylistInterface | null
-}
-
-interface Props {
-  playlist: PlaylistInterface,
-  currSongIdx: number | null,
-  isPlaying: Boolean,
-  backClick: () => void
 }
 
 // On load, send IPC to load tracks
@@ -26,28 +26,33 @@ interface Props {
 // background == body:background-image or color
 // font == body:font-family and body:color
 // const PlaylistView = ({ playlist, backClick }: Props) => (
-export default class PlaylistView extends React.Component<Props, State> {
+class PlaylistView extends React.Component<PlaylistProps, State> {
   state: Readonly<State> = { playlist: null }
 
   componentDidMount(): void {
     ipcRenderer.send('playlist:show', { playlist: this.props.playlist })
   }
 
+  isPlaying(): Boolean {
+    return this.props.playerState == PlayerState.Playing
+  }
+
   trackStyle(idx: number): React.CSSProperties {
-    const pl = this.props.playlist
-    if (idx === this.props.currSongIdx && this.props.isPlaying) {
+    const plStyle = this.props.playlist?.style ?? {}
+    if (idx === this.props.currTrackIdx && this.isPlaying()) {
       return {
-        color: pl.style['background-color'] || 'inherit',
-        backgroundColor: pl.style.color || 'inherit'
+        color: plStyle['background-color'] || 'inherit',
+        backgroundColor: plStyle.color || 'inherit'
       }
     } else {
       return {}
     }
   }
 
+  // FIXME redux
   trackSelect(playlistId: number, trackIdx: number) {
-    if (this.props.isPlaying || confirm('Play from this playlist?')) {
-      if (playlistId === this.props.playlist.id) {
+    if (this.isPlaying() || confirm('Play from this playlist?')) {
+      if (playlistId === this.props.playlist?.id) {
         SystemEmitter.emit(EMITTER_PLAYBACK_TRACK_SELECT, { playlistId, trackIdx })
       }
     }
@@ -55,12 +60,12 @@ export default class PlaylistView extends React.Component<Props, State> {
 
   // TODO: curr song idx needs to also track which playlist, not just track idx
   render() {
-    const playlist = this.props.playlist
+    const playlist = this.props.playlist!
     return (
       <div>
         {playlist.loaded ? null : <ImgLoader src={imgSrc} />}
         <BackButton
-          onClick={this.props.backClick}
+          onClick={this.props.clearPlaylist}
           className="oi"
           data-glyph="arrow-circle-left"
         />
@@ -71,9 +76,10 @@ export default class PlaylistView extends React.Component<Props, State> {
             playlist.songs.map((s, i) => (
               <TrackContainer
                 key={`track-${i}`}
-                playing={i === this.props.currSongIdx && this.props.isPlaying}
+                playing={i === this.props.currTrackIdx && this.isPlaying()}
                 style={this.trackStyle(i)}
-                onClick={this.trackSelect.bind(this, this.props.playlist.id, i)}
+                // FIXME redux
+                onClick={this.trackSelect.bind(this, this.props.playlist?.id, i)}
               >
                 <TrackSubcontainer>
                   <SongTitleText>{s.title}</SongTitleText>
@@ -88,3 +94,23 @@ export default class PlaylistView extends React.Component<Props, State> {
     )
   }
 }
+
+const mapStateToProps = (state: RootState) => ({
+  playlist: state.ui.playlist,
+  currTrackIdx: state.playback.currSongIdx,
+  playerState: state.playback.status
+})
+
+const mapDispatchToProps = (dispatch: Dispatch<UiActionTypes>) => ({
+  clearPlaylist: () => dispatch(setViewingPlaylist(null))
+})
+
+const connector = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)
+
+type PlaylistProps = ConnectedProps<typeof connector>
+
+export default connector(PlaylistView)
+

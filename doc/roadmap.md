@@ -22,6 +22,7 @@
   - https://github.com/MarshallOfSound/Google-Play-Music-Desktop-Player-UNOFFICIAL-
 - [ ] Structure/organization
   - [ ] src/main and src/renderer
+- [ ] Copy song/artist to clipboard
 
 ## v0.2.0
 - [ ] Sharable show recommendation files that include a playlist id and specific tracks

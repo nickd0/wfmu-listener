@@ -3,6 +3,12 @@ import { ipcRenderer } from 'electron'
 import React from 'react'
 import PlaylistInterface from '../../../interfaces/playlist'
 
+import { connect, ConnectedProps } from 'react-redux'
+import { Dispatch } from 'redux'
+import { RootState } from '../../renderer/store'
+import { PlaybackActionTypes, PlayBackState, PlayerState } from '../../renderer/store/playback/types'
+import { updatePlaybackState, setPlaybackEtime, playbackEtimeTick } from '../../renderer/store/playback/actions'
+
 
 // TODO: player has a Howl for each playlist
 
@@ -15,19 +21,19 @@ import {
 import PlayerScrubber from './PlayerScrubber';
 import SystemEmitter, { PlaybackTrackSelectAction, EMITTER_PLAYBACK_TRACK_SELECT } from '../../services/emitter'
 
-interface Props {
-  streamUrl: string,
-  playlist: PlaylistInterface,
-  setCurrSong: (idx: number) => void,
-  defaultTrack: number
-}
+// interface Props {
+//   streamUrl: string,
+//   playlist: PlaylistInterface,
+//   setCurrSong: (idx: number) => void,
+//   defaultTrack: number
+// }
 
-enum PlayerState {
-  Loading,
-  Ready,
-  Playing,
-  Paused
-}
+// enum PlayerState {
+//   Loading,
+//   Ready,
+//   Playing,
+//   Paused
+// }
 
 // Integrate this state into redux
 interface State {
@@ -40,7 +46,7 @@ interface State {
   trackNameDir: number
 }
 
-export default class Player extends React.Component<Props, State> {
+class Player extends React.Component<PlayerProps, State> {
   howl: Howl | null;
   tickTimer: number | null;
   trackScroller: HTMLDivElement | null;
@@ -57,7 +63,7 @@ export default class Player extends React.Component<Props, State> {
     trackNameDir: -1
   }
 
-  constructor(props: Readonly<Props>) {
+  constructor(props: Readonly<PlayerProps>) {
     super(props)
     this.howl = null
     this.tickTimer = null
@@ -98,21 +104,20 @@ export default class Player extends React.Component<Props, State> {
 
     // Global media control
     ipcRenderer.on('playback:playpause', (e) => {
-      console.log(e)
-      _this.toggleMedia()
+      this.toggleMedia()
     })
 
     ipcRenderer.on('playback:next', (e) => {
-      _this.skip(1)
+      this.skip(1)
     })
 
     ipcRenderer.on('playback:prev', (e) => {
-      _this.skip(-1)
+      this.skip(-1)
     })
 
     window.addEventListener('keypress', (e) => {
       if (e.key === ' ') {
-        _this.toggleMedia()
+        this.toggleMedia()
       }
     })
 
@@ -121,9 +126,9 @@ export default class Player extends React.Component<Props, State> {
       this.setTrack(trackAction.trackIdx)
     })
 
-    if (this.props.defaultTrack) {
-      this.setTrack(this.props.defaultTrack)
-    }
+    // if (this.props.defaultTrack) {
+    //   this.setTrack(this.props.defaultTrack)
+    // }
   }
   
 
@@ -139,7 +144,7 @@ export default class Player extends React.Component<Props, State> {
 
   setupHowl() {
     this.howl = new Howl({
-      src: [this.props.streamUrl],
+      src: [this.props.playback.playlist!.mp3Url!],
       format: ['mp3'],
       volume: 1,
       html5: true,
@@ -149,29 +154,34 @@ export default class Player extends React.Component<Props, State> {
     const _this = this
 
     this.howl.once('load', function() {
-      _this.setState({
-        playerReady: true,
-        status: PlayerState.Ready,
-        duration: _this.howl?.duration() ?? 0,
-        currSongIdx: 0
-      })
+      _this.props.updatePlaybackState(PlayerState.Ready, _this.howl?.duration() ?? 0)
+      _this.props.setPlaybackETime(0)
+      // _this.setState({
+      //   playerReady: true,
+      //   status: PlayerState.Ready,
+      //   duration: _this.howl?.duration() ?? 0,
+      //   currSongIdx: 0
+      // })
     })
 
+    // FIXME redux (elapsed time)
     this.howl.on('play', function() {
-      _this.setState({ status: PlayerState.Playing })
+      // _this.setState({ status: PlayerState.Playing })
       if (_this.howl?.playing()) {
         _this.tickTimer = setInterval(() => {
           if (_this.state.status === PlayerState.Paused) return
 
-          _this.setState({ eTime: _this.state.eTime + 1 })
+          // _this.setState({ eTime: _this.state.eTime + 1 })
+          _this.props.etimeTick()
           // TODO: make this better, performance check here
           // Use currIdx for this
-          const playlist = _this.props.playlist
+          const playlist = _this.props.playback.playlist!
           playlist.songs.forEach((song, i) => {
             if (_this.state.eTime >= (song.timestamp ?? 0)) {
               if (_this.state.eTime < ((playlist.songs[i + 1]?.timestamp ?? 0))) {
                 _this.setTrackDisplay(i)
-                _this.props.setCurrSong(i)
+                // FIXME
+                // _this.props.setCurrSong(i)
               }
             }
           })
@@ -197,7 +207,7 @@ export default class Player extends React.Component<Props, State> {
 
   // TODO: can't scrub to first or last track
   getTrackFromTs(): number {
-    const playlist = this.props.playlist
+    const playlist = this.props.plaback.playlist!
 
     for (let i = 0; i < playlist.songs.length; i++) {
       const song = playlist.songs[i]
@@ -222,16 +232,16 @@ export default class Player extends React.Component<Props, State> {
   }
 
   toggleMedia() {
-    switch (this.state.status) {
+    switch (this.props.playback.status) {
       case PlayerState.Ready:
       case PlayerState.Paused:
         this.howl?.play()
-        this.setState({ status: PlayerState.Playing })
+        this.props.updatePlaybackState(PlayerState.Playing)
         break
 
       case PlayerState.Playing:
         this.howl?.pause()
-        this.setState({ status: PlayerState.Paused })
+        this.props.updatePlaybackState(PlayerState.Paused)
         break
     }
   }
@@ -248,7 +258,8 @@ export default class Player extends React.Component<Props, State> {
     if (nextSong?.timestamp) {
       this.howl?.seek(nextSong?.timestamp)
       this.setTrackDisplay(newIdx, nextSong?.timestamp)
-      this.props.setCurrSong(newIdx)
+      // FIXME
+      // this.props.setCurrSong(newIdx)
     }
   }
 
@@ -269,26 +280,29 @@ export default class Player extends React.Component<Props, State> {
   }
 
   setTrack(idx: number, fromETime = false): void {
-    const nextSong = this.props.playlist.songs[idx]
+    const songs = this.props.playback.playlist!.songs
+    const nextSong = songs[idx]
     if (nextSong?.timestamp != null) {
       const time = fromETime ? this.state.eTime : nextSong?.timestamp
       this.howl?.seek(time)
       this.setTrackDisplay(idx, time)
-      this.props.setCurrSong(idx)
+      // FIXME
+      // this.props.setCurrSong(idx)
 
-    } else if (this.props.playlist.songs.length == 0) {
+    } else if (songs.length == 0) {
       // Trackless playlist, just seek to the ts
       this.howl?.seek(this.state.eTime)
     }
   }
 
   renderPlayerInfo() {
-    const song = this.props.playlist?.songs[this.state.currSongIdx ?? 0]
+    const playlist = this.props.playback.playlist!
+    const song = playlist.songs[this.state.currSongIdx ?? 0]
     return (
       <PlayerInfo>
         <PlayerInfoWrap>
           {
-            this.props.playlist.songs.length
+            playlist.songs.length
             ? (
               <ScrollablePlayerInfo ref={this.setTrackInfoRef.bind(this)} style={{left: this.state.trackNameLeft}}>
                 <PlayerTrackName>{song?.title ?? '--'}</PlayerTrackName>
@@ -297,7 +311,7 @@ export default class Player extends React.Component<Props, State> {
             )
             : null
           }
-          <PlayerPlaylist>{this.props.playlist?.showName ?? '--'}</PlayerPlaylist>
+          <PlayerPlaylist>{playlist?.showName ?? '--'}</PlayerPlaylist>
         </PlayerInfoWrap>
       </PlayerInfo>
     )
@@ -329,9 +343,11 @@ export default class Player extends React.Component<Props, State> {
   }
 
   render() {
-    const continuousPlaylist = this.props.playlist.songs.length === 0
+    const continuousPlaylist = this.props.playback.playlist!.songs.length === 0
+    const playbackState = this.props.playback.status
+    const { duration, eTime } = this.props.playback
     return (
-      <PlayerContainer className={this.state.playerReady ? 'ready' : ''}>
+      <PlayerContainer className={playbackState != PlayerState.Loading ? 'ready' : ''}>
         { this.renderPlayerInfo() }
         <PlayerControlsContainer>
           <PlayerControls>
@@ -346,8 +362,8 @@ export default class Player extends React.Component<Props, State> {
               onClick={this.toggleMedia.bind(this)}
               href="#"
               className="oi"
-              data-glyph={`media-${this.state.status === PlayerState.Playing ? 'pause' : 'play'}`}
-              title={this.state.status === PlayerState.Playing ? 'Pause' : 'Play'}
+              data-glyph={`media-${playbackState === PlayerState.Playing ? 'pause' : 'play'}`}
+              title={playbackState === PlayerState.Playing ? 'Pause' : 'Play'}
             />
             <a
               href='#'
@@ -357,10 +373,34 @@ export default class Player extends React.Component<Props, State> {
               title={continuousPlaylist ? 'Skip 10 seconds' : 'Next track'}
             />
           </PlayerControls>
-          <ScrubberTimestampElapsed>{this.timestampString(this.state.eTime)}</ScrubberTimestampElapsed>
-          <PlayerScrubber onScrubberEnd={this.endScrubbing.bind(this)} onScrubberMove={this.moveScrubber.bind(this)} duration={this.state.duration} eTime={this.state.eTime} />
+          <ScrubberTimestampElapsed>{this.timestampString(eTime)}</ScrubberTimestampElapsed>
+          <PlayerScrubber
+            onScrubberEnd={this.endScrubbing.bind(this)}
+            onScrubberMove={this.moveScrubber.bind(this)}
+            duration={duration}
+            eTime={eTime}
+          />
         </PlayerControlsContainer>
       </PlayerContainer>
     )
   }
 }
+
+const mapStateToProps = (state: RootState) => ({
+  playback: state.playback
+})
+
+const mapDispatchToProps = (dispatch: Dispatch<PlaybackActionTypes>) => ({
+  updatePlaybackState: (state: PlayerState, dur: number | null = null) => dispatch(updatePlaybackState(state, dur)),
+  setPlaybackETime: (eTime: number) => dispatch(setPlaybackEtime(eTime)),
+  etimeTick: () => dispatch(playbackEtimeTick())
+})
+
+const connector = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)
+
+type PlayerProps = ConnectedProps<typeof connector>
+
+export default connector(Player)
