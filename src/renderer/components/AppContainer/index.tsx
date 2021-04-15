@@ -6,7 +6,7 @@ import { Dispatch } from 'redux'
 import { RootState } from '../../../renderer/store'
 import { UiActionTypes } from '../../../renderer/store/ui/types'
 import { PlaybackActionTypes } from '../../../renderer/store/playback/types'
-import { setViewingPlaylist } from '../../../renderer/store/ui/actions'
+import { setViewingPlaylist, showCampaign } from '../../../renderer/store/ui/actions'
 import { setPlaybackPlaylist } from '../../../renderer/store/playback/actions'
 
 import {
@@ -23,6 +23,7 @@ import { ipcRenderer } from 'electron'
 
 import imgSrc from '../../../../assets/main-logo.png'
 import Playlist from '../../../../electron/playlist'
+import { CampaignDisplay } from "../CampaignDisplay";
 
 interface State {
   // activePlaylist: PlaylistInterface | null,
@@ -66,6 +67,10 @@ class AppContainer extends React.Component<AppContainerProps> {
     })
 
     ipcRenderer.send('playlists:ready')
+
+    ipcRenderer.on('campaigns:show', (_, show: boolean) => {
+      this.props.showCampaign(show)
+    })
   }
 
   selectPlaylist(pl: PlaylistInterface): void {
@@ -93,9 +98,14 @@ class AppContainer extends React.Component<AppContainerProps> {
     return cssProps
   }
 
+  exitCampaign() {
+    this.props.showCampaign(false)
+  }
+
   render() {
     return (
       <div style={{height: "100%"}}>
+        { this.props.campaignDisplayed ? <CampaignDisplay exit={this.exitCampaign.bind(this)} /> : null }
         <TitleSection>
           <div />
           <LogoSection>
@@ -119,12 +129,14 @@ class AppContainer extends React.Component<AppContainerProps> {
 const mapStateToProps = (state: RootState) => ({
   playlist: state.ui.playlist,
   playbackPlaylist: state.playback.playlist,
-  currSongIdx: state.playback.currSongIdx
+  currSongIdx: state.playback.currSongIdx,
+  campaignDisplayed: state.ui.showCampaignDisplay
 })
 
 const mapDispatchToProps = (dispatch: Dispatch<UiActionTypes | PlaybackActionTypes>) => ({
   setActivePlaylist: (playlist: PlaylistInterface) => dispatch(setViewingPlaylist(playlist)),
-  setPlaybackPlaylist: (playlist: PlaylistInterface) => dispatch(setPlaybackPlaylist(playlist))
+  setPlaybackPlaylist: (playlist: PlaylistInterface) => dispatch(setPlaybackPlaylist(playlist)),
+  showCampaign: (show: boolean) => dispatch(showCampaign(show))
 })
 
 const connector = connect(

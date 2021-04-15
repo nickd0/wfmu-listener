@@ -11,7 +11,7 @@
 - [ ] ~~Redux (especially for managing player state)~~
   - Use Emitter for now for simplicity
 - [x] Click track to skip to it
-- [ ] Play a different playlist while playing
+- [x] Play a different playlist while playing
 - [x] Styling
 - [ ] Tests
 - [ ] Timeouts and error handling
@@ -22,7 +22,7 @@
   - https://github.com/MarshallOfSound/Google-Play-Music-Desktop-Player-UNOFFICIAL-
 - [x] Structure/organization
   - [x] src/main and src/renderer
-- [ ] Copy song/artist to clipboard
+- [ ] Crash reporter
 
 ## v0.2.0
 - [ ] Sharable show recommendation files that include a playlist id and specific tracks

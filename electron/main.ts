@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, systemPreferences } from 'electron'
+import { app, BrowserWindow, ipcMain, globalShortcut, systemPreferences, shell, ipcRenderer } from 'electron'
 import * as path from 'path'
 import * as url from 'url'
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
@@ -9,6 +9,8 @@ import PlaylistFeed from './feed'
 import Playlist, { fetchPlaylistInfo, fetchPlaylistFile } from './playlist'
 import { autoUpdater } from 'electron-updater'
 import log from 'electron-log'
+
+import { appendUserKey, incrementUserKey, readUserData, recordPlaylistHistory, writeUserData } from '../src/services/userdata'
 
 //TODO
 // require('crash-reporter').start();
@@ -56,6 +58,11 @@ function createWindow () {
     )
   }
 
+  mainWindow.webContents.on('new-window', function(e, url) {
+    e.preventDefault();
+    shell.openExternal(url);
+  });
+
   mainWindow.on('show', () => {
   });
 
@@ -79,8 +86,22 @@ function createWindow () {
           .then((pl: Playlist) => {
             // TODO use a different event here?
             evt.reply('playlist:load', pl)
+            recordPlaylistHistory({
+              id: pl.id,
+              name: pl.showName,
+              listenedAt: (new Date()).toISOString()
+            })
           })
       })
+  })
+
+  ipcMain.on('playback:streamtime', (evt, time: number) => {
+    incrementUserKey('streamTotalSec', time)
+    let streamedTime = readUserData('streamTotalSec')
+    if (streamedTime > 20) { // also check last campaign show
+      mainWindow?.webContents.send('campaigns:show', true)
+      writeUserData({ lastCampaignShow: (new Date()).toISOString() })
+    }
   })
 
   // new AppUpdater()
@@ -99,6 +120,9 @@ app
   .on('ready', () => {
     // Ask for accessibility
     systemPreferences.isTrustedAccessibilityClient(true)
+
+    let numOpens = readUserData('numOpens') || 0
+    writeUserData({lastOpen: (new Date().toISOString()), numOpens: numOpens + 1})
 
     globalShortcut.register('MediaPlayPause', function () {
       log.debug('mediaplaypause pressed')

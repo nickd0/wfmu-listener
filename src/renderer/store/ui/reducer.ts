@@ -1,5 +1,5 @@
 import {
-  SET_VIEWING_PLAYLIST, UiActionTypes, UiState
+  SET_VIEWING_PLAYLIST, SHOW_CAMPAIGN, UiActionTypes, UiState
 } from './types'
 
 const initialState: UiState = {
@@ -14,6 +14,12 @@ export function uiReducer(
       return {
         ...state,
         playlist: action.playlist
+      }
+
+    case SHOW_CAMPAIGN:
+      return {
+        ...state,
+        showCampaignDisplay: action.show
       }
 
     default:

@@ -1,5 +1,5 @@
 import { Howl } from 'howler'
-import { ipcRenderer, clipboard } from 'electron'
+import { ipcRenderer, clipboard, ipcMain } from 'electron'
 import React from 'react'
 import PlaylistInterface from '../../../../interfaces/playlist'
 
@@ -145,9 +145,11 @@ class Player extends React.Component<PlayerProps, State> {
       if (_this.howl?.playing()) {
         _this.tickTimer = setInterval(() => {
           if (_this.props.playback.status === PlayerState.Paused) return
-          console.log(`TICK playlist ${_this.props.playback.playlist?.id}, playing: ${_this.howl?.playing()}`)
 
           _this.props.etimeTick()
+          if (_this.props.playback.eTime % 2 == 0) {
+            ipcRenderer.send('playback:streamtime', 2)
+          }
         }, 1000)
       }
     })
