@@ -1,6 +1,6 @@
 import styled, { createGlobalStyle } from 'styled-components'
-import OpenIconicFont from '../../assets/fonts/open-iconic.ttf'
-import '../../assets/css/open-iconic.scss'
+import OpenIconicFont from '../../../assets/fonts/open-iconic.ttf'
+import '../../../assets/css/open-iconic.scss'
 
 export const GlobalStyle = createGlobalStyle`
   * {

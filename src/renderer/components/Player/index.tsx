@@ -1,13 +1,13 @@
 import { Howl } from 'howler'
 import { ipcRenderer, clipboard } from 'electron'
 import React from 'react'
-import PlaylistInterface from '../../../interfaces/playlist'
+import PlaylistInterface from '../../../../interfaces/playlist'
 
 import { connect, ConnectedProps } from 'react-redux'
 import { Dispatch } from 'redux'
-import { RootState } from '../../renderer/store'
-import { PlaybackActionTypes, PlayBackState, PlayerState } from '../../renderer/store/playback/types'
-import { updatePlaybackState, setPlaybackEtime, playbackEtimeTick } from '../../renderer/store/playback/actions'
+import { RootState } from '../../../renderer/store'
+import { PlaybackActionTypes, PlayBackState, PlayerState } from '../../../renderer/store/playback/types'
+import { updatePlaybackState, setPlaybackEtime, playbackEtimeTick } from '../../../renderer/store/playback/actions'
 
 
 // TODO: player has a Howl for each playlist
@@ -19,8 +19,8 @@ import {
   ScrubberTimestampElapsed, ScrubberTimestampTotal
 } from './styles'
 import PlayerScrubber from './PlayerScrubber';
-import { setViewingPlaylist } from '../../renderer/store/ui/actions'
-import { UiActionTypes } from '../../renderer/store/ui/types'
+import { setViewingPlaylist } from '../../../renderer/store/ui/actions'
+import { UiActionTypes } from '../../../renderer/store/ui/types'
 interface State {
   trackNameLeft: number,
   trackNameDir: number

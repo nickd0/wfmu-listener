@@ -1,13 +1,13 @@
 // use https://blog.logrocket.com/building-a-menu-bar-application-with-electron-and-react/
-import PlaylistInterface from "../../../interfaces/playlist";
+import PlaylistInterface from "../../../../interfaces/playlist";
 import React from 'react'
 import { connect, ConnectedProps } from 'react-redux'
 import { Dispatch } from 'redux'
-import { RootState } from '../../renderer/store'
-import { UiActionTypes } from '../../renderer/store/ui/types'
-import { PlaybackActionTypes } from '../../renderer/store/playback/types'
-import { setViewingPlaylist } from '../../renderer/store/ui/actions'
-import { setPlaybackPlaylist } from '../../renderer/store/playback/actions'
+import { RootState } from '../../../renderer/store'
+import { UiActionTypes } from '../../../renderer/store/ui/types'
+import { PlaybackActionTypes } from '../../../renderer/store/playback/types'
+import { setViewingPlaylist } from '../../../renderer/store/ui/actions'
+import { setPlaybackPlaylist } from '../../../renderer/store/playback/actions'
 
 import {
   Container, TitleSection, Subtitle,
@@ -21,8 +21,8 @@ import TrayView from '../Tray'
 import PlaylistView from '../Playlist'
 import { ipcRenderer } from 'electron'
 
-import imgSrc from '../../../assets/main-logo.png'
-import Playlist from '../../../electron/playlist'
+import imgSrc from '../../../../assets/main-logo.png'
+import Playlist from '../../../../electron/playlist'
 
 interface State {
   // activePlaylist: PlaylistInterface | null,

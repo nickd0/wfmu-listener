@@ -1,20 +1,20 @@
 import React from 'react'
-import PlaylistInterface from '../../../interfaces/playlist'
+import PlaylistInterface from '../../../../interfaces/playlist'
 import { ShowName, ShowSub } from '../../styles/GlobalStyle'
 import {
   TrackContainer, SongArtistText, SongTitleText,
   TrackSubcontainer, TrackTSContainer, ImgLoader, BackButton
 } from './styles'
 import { ipcRenderer, clipboard } from 'electron'
-import imgSrc from '../../../assets/wfmu-loader.png'
+import imgSrc from '../../../../assets/wfmu-loader.png'
 
 import { connect, ConnectedProps } from 'react-redux'
 import { Dispatch } from 'redux'
-import { RootState } from '../../renderer/store'
-import { PlaybackActionTypes, PlayerState } from '../../renderer/store/playback/types'
-import { setViewingPlaylist } from '../../renderer/store/ui/actions'
-import { UiActionTypes } from '../../renderer/store/ui/types'
-import { setPlaybackEtime, setPlaybackPlaylist, setPlaybackTrackIdx } from '../../renderer/store/playback/actions'
+import { RootState } from '../../../renderer/store'
+import { PlaybackActionTypes, PlayerState } from '../../../renderer/store/playback/types'
+import { setViewingPlaylist } from '../../../renderer/store/ui/actions'
+import { UiActionTypes } from '../../../renderer/store/ui/types'
+import { setPlaybackEtime, setPlaybackPlaylist, setPlaybackTrackIdx } from '../../../renderer/store/playback/actions'
 
 interface State {
   playlist: PlaylistInterface | null

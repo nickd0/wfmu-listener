@@ -3,3 +3,4 @@ dist
 packages
 .DS_Store
 .vscode
+.scratch

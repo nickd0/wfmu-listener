@@ -4,7 +4,7 @@ import { GlobalStyle } from './styles/GlobalStyle'
 
 import AppContainer from './components/AppContainer'
 import { Provider } from 'react-redux'
-import store from './renderer/store'
+import store from './store'
 
 const mainElement = document.createElement('div')
 mainElement.setAttribute('id', 'root')

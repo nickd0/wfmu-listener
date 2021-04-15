@@ -2,7 +2,7 @@
 import React, { State } from 'react'
 import { FeedGroup, FeedList } from "./styles";
 import { ShowName, ShowSub } from '../../styles/GlobalStyle'
-import PlaylistInterface from "../../../interfaces/playlist";
+import PlaylistInterface from "../../../../interfaces/playlist";
 
 import { ipcRenderer } from "electron";
 
