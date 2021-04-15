@@ -18,7 +18,7 @@ export default interface PlaylistInterface {
   loaded: boolean;
 
   // TODO use a react
-  style: unknown;
+  style?: { [key: string]: string };
 
   fetchInfo(): Promise<PlaylistInterface>;
 }

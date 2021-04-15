@@ -59,6 +59,10 @@ export const PlayerArtist = styled.span`
 `
 
 export const PlayerPlaylist = styled.p`
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline
+  }
 `
 
 export const PlayerInfoWrap = styled.div`

@@ -12,7 +12,8 @@ const initialState: PlayBackState = {
   duration: 0,
   eTime: 0,
   currSongIdx: null,
-  playlist: null
+  playlist: null,
+  isScrubbing: false
 }
 
 export function playbackReducer(
@@ -23,6 +24,7 @@ export function playbackReducer(
       return {
         ...state,
         status: action.state,
+        isScrubbing: action.isScrubbing ?? state.isScrubbing,
         duration: action.duration || state.duration
       }
 
@@ -32,16 +34,33 @@ export function playbackReducer(
         playlist: action.playlist
       }
 
+    case PLAYBACK_ETIME_TICK:
     case SET_PLAYBACK_ETIME:
-      return {
-        ...state,
-        eTime: action.eTime
+      // return {
+      //   ...state,
+      //   eTime: action.eTime
+      // }
+
+      let updateEtime = state.eTime + 1
+      if (action.type == SET_PLAYBACK_ETIME) {
+        updateEtime = action.eTime
+      }
+      
+      let updatedIdx = 0;
+      if (state.currSongIdx != null) {
+        state.playlist?.songs.forEach((song, i) => {
+          if (updateEtime >= (song.timestamp ?? 0)) {
+            if (updateEtime < ((state.playlist?.songs[i + 1]?.timestamp ?? 0))) {
+              updatedIdx = i
+            }
+          }
+        })
       }
 
-    case PLAYBACK_ETIME_TICK:
       return {
         ...state,
-        eTime: state.eTime + 1
+        currSongIdx: updatedIdx,
+        eTime: updateEtime
       }
 
     case SET_PLAYBACK_TRACK:

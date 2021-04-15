@@ -1,10 +1,14 @@
 import styled from 'styled-components'
 
-export const Container = styled.div`
+interface ContainerProps {
+  full: boolean
+}
+
+export const Container = styled.div<ContainerProps>`
     padding: 25px;
     padding-bottom: 0;
     overflow-y: scroll;
-    height: ${props => (props.full ? '100%' : 'calc(100% - 140px)')};
+    height: ${props => (props.full ? 'calc(100% - 90px)' : 'calc(100% - 140px)')};
 `
 
 export const Image = styled.img`

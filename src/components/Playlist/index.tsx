@@ -7,8 +7,6 @@ import {
 } from './styles'
 import { ipcRenderer, clipboard } from 'electron'
 import imgSrc from '../../../assets/wfmu-loader.png'
-import Player from '../Player'
-import SystemEmitter, { EMITTER_PLAYBACK_TRACK_SELECT } from '../../services/emitter'
 
 import { connect, ConnectedProps } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -16,30 +14,36 @@ import { RootState } from '../../renderer/store'
 import { PlaybackActionTypes, PlayerState } from '../../renderer/store/playback/types'
 import { setViewingPlaylist } from '../../renderer/store/ui/actions'
 import { UiActionTypes } from '../../renderer/store/ui/types'
+import { setPlaybackEtime, setPlaybackPlaylist, setPlaybackTrackIdx } from '../../renderer/store/playback/actions'
 
 interface State {
   playlist: PlaylistInterface | null
 }
 
-// On load, send IPC to load tracks
-// Pull playlist page background, color, and font
-// background == body:background-image or color
-// font == body:font-family and body:color
-// const PlaylistView = ({ playlist, backClick }: Props) => (
 class PlaylistView extends React.Component<PlaylistProps, State> {
   state: Readonly<State> = { playlist: null }
+  private containerRef: React.RefObject<HTMLDivElement>
+
+  constructor(props: PlaylistProps) {
+    super(props)
+    this.containerRef = React.createRef()
+  }
 
   componentDidMount(): void {
-    ipcRenderer.send('playlist:show', { playlist: this.props.playlist })
+    let { playlist } = this.props
+    if (!playlist?.loaded) ipcRenderer.send('playlist:show', { playlist: this.props.playlist })
   }
 
   isPlaying(): Boolean {
-    return this.props.playerState == PlayerState.Playing
+    let { playlist, playingPlaylist } = this.props
+    return playlist?.id == playingPlaylist?.id
   }
 
   trackStyle(idx: number): React.CSSProperties {
     const plStyle = this.props.playlist?.style ?? {}
+    let { playlist, playingPlaylist } = this.props
     if (idx === this.props.currTrackIdx && this.isPlaying()) {
+      console.log(`selected track ${idx}`)
       return {
         color: plStyle['background-color'] || 'inherit',
         backgroundColor: plStyle.color || 'inherit'
@@ -49,12 +53,13 @@ class PlaylistView extends React.Component<PlaylistProps, State> {
     }
   }
 
-  // FIXME redux
-  trackSelect(playlistId: number, trackIdx: number) {
-    if (this.isPlaying() || confirm('Play from this playlist?')) {
-      if (playlistId === this.props.playlist?.id) {
-        SystemEmitter.emit(EMITTER_PLAYBACK_TRACK_SELECT, { playlistId, trackIdx })
-      }
+  trackSelect(timestamp: number) {
+    const { setPlaybackEtime, setPlaybackPlaylist } = this.props
+    if (this.isPlaying()) {
+      setPlaybackEtime(timestamp)
+    } else if (confirm('Play from this playlist?')) {
+      setPlaybackEtime(timestamp)
+      setPlaybackPlaylist(this.props.playlist!)
     }
   }
 
@@ -62,7 +67,7 @@ class PlaylistView extends React.Component<PlaylistProps, State> {
   render() {
     const playlist = this.props.playlist!
     return (
-      <div>
+      <div ref={this.containerRef}>
         {playlist.loaded ? null : <ImgLoader src={imgSrc} />}
         <BackButton
           onClick={this.props.clearPlaylist}
@@ -76,10 +81,9 @@ class PlaylistView extends React.Component<PlaylistProps, State> {
             playlist.songs.map((s, i) => (
               <TrackContainer
                 key={`track-${i}`}
-                playing={i === this.props.currTrackIdx && this.isPlaying()}
                 style={this.trackStyle(i)}
                 // FIXME redux
-                onClick={this.trackSelect.bind(this, this.props.playlist?.id, i)}
+                onClick={function(this: PlaylistView) { this.trackSelect(s.timestamp ?? 0) }.bind(this) }
               >
                 <TrackSubcontainer>
                   <SongTitleText>{s.title}</SongTitleText>
@@ -98,11 +102,14 @@ class PlaylistView extends React.Component<PlaylistProps, State> {
 const mapStateToProps = (state: RootState) => ({
   playlist: state.ui.playlist,
   currTrackIdx: state.playback.currSongIdx,
-  playerState: state.playback.status
+  playerState: state.playback.status,
+  playingPlaylist: state.playback.playlist
 })
 
-const mapDispatchToProps = (dispatch: Dispatch<UiActionTypes>) => ({
-  clearPlaylist: () => dispatch(setViewingPlaylist(null))
+const mapDispatchToProps = (dispatch: Dispatch<UiActionTypes | PlaybackActionTypes>) => ({
+  clearPlaylist: () => dispatch(setViewingPlaylist(null)),
+  setPlaybackEtime: (time: number) => dispatch(setPlaybackEtime(time)),
+  setPlaybackPlaylist: (playlist: PlaylistInterface) => dispatch(setPlaybackPlaylist(playlist))
 })
 
 const connector = connect(

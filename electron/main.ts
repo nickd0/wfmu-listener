@@ -35,11 +35,8 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     width: 450,
     height: 600,
-    // show: false,
-    // alwaysOnTop: true,
     resizable: false,
     icon: getAssetPath('icon.icns'),
-    // frame: false,
     titleBarStyle: 'hidden',
     backgroundColor: '#191622',
     webPreferences: {

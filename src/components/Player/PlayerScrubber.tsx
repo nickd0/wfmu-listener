@@ -29,7 +29,7 @@ class PlayerScrubber extends React.Component<Props, State> {
     this.props.onScrubberEnd()
   }
 
-  onScrubberDrag(e) {
+  onScrubberDrag(e: React.MouseEvent) {
     if (this.state.scrubMove) {
       this.sendScrubberPosition(e.pageX)
       // const rect = this.refs.scrubLine.getBoundingClientRect()
@@ -39,7 +39,7 @@ class PlayerScrubber extends React.Component<Props, State> {
     }
   }
 
-  onScrubberLineClick(e) {
+  onScrubberLineClick(e: React.MouseEvent) {
     this.sendScrubberPosition(e.pageX, true)
   }
 
@@ -53,7 +53,6 @@ class PlayerScrubber extends React.Component<Props, State> {
     const scrubberPos = (this.props.eTime * 100 / (this.props.duration))
 
     return (
-      // <ScrubberContainer onMouseMove={this.onScrubberDrag.bind(this)} onMouseLeave={this.onScrubberMouseUp.bind(this)}>
       <ScrubberContainer onMouseMove={this.onScrubberDrag.bind(this)}>
         <ScrubberLine onClick={this.onScrubberLineClick.bind(this)} ref="scrubLine"/>
         <ScrubberHandle

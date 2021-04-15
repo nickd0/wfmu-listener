@@ -13,7 +13,8 @@ export interface PlayBackState {
   duration: number,
   eTime: number,
   currSongIdx: number | null,
-  playlist: PlaylistInterface | null
+  playlist: PlaylistInterface | null,
+  isScrubbing: boolean
 }
 
 export const SET_PLAYBACK_STATE = 'SET_PLAYBACK_STATE'
@@ -26,7 +27,8 @@ export const SET_PLAYBACK_PLAYLIST = 'SET_PLAYBACK_PLAYLIST'
 interface UpdatePlaybackStateAction {
   type: typeof SET_PLAYBACK_STATE,
   state: PlayerState,
-  duration: number | null
+  duration: number | null,
+  isScrubbing: boolean | null
 }
 
 interface SetPlaybackPlaylist {

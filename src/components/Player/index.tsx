@@ -19,29 +19,9 @@ import {
   ScrubberTimestampElapsed, ScrubberTimestampTotal
 } from './styles'
 import PlayerScrubber from './PlayerScrubber';
-import SystemEmitter, { PlaybackTrackSelectAction, EMITTER_PLAYBACK_TRACK_SELECT } from '../../services/emitter'
-
-// interface Props {
-//   streamUrl: string,
-//   playlist: PlaylistInterface,
-//   setCurrSong: (idx: number) => void,
-//   defaultTrack: number
-// }
-
-// enum PlayerState {
-//   Loading,
-//   Ready,
-//   Playing,
-//   Paused
-// }
-
-// Integrate this state into redux
+import { setViewingPlaylist } from '../../renderer/store/ui/actions'
+import { UiActionTypes } from '../../renderer/store/ui/types'
 interface State {
-  playerReady: boolean,
-  status: PlayerState,
-  duration: number,
-  eTime: number,
-  currSongIdx: number | null,
   trackNameLeft: number,
   trackNameDir: number
 }
@@ -49,16 +29,12 @@ interface State {
 class Player extends React.Component<PlayerProps, State> {
   howl: Howl | null;
   tickTimer: number | null;
+  scrollTimer: number | null;
   trackScroller: HTMLDivElement | null;
   trackScrollPause: number;
   trackScrollWait: Boolean;
 
   state: Readonly<State> = {
-    playerReady: false,
-    status: PlayerState.Loading,
-    duration: 0,
-    eTime: 0,
-    currSongIdx: null,
     trackNameLeft: 0,
     trackNameDir: -1
   }
@@ -67,6 +43,7 @@ class Player extends React.Component<PlayerProps, State> {
     super(props)
     this.howl = null
     this.tickTimer = null
+    this.scrollTimer = null
     this.trackScroller = null
     this.trackScrollPause = 0
     this.trackScrollWait = false
@@ -77,7 +54,7 @@ class Player extends React.Component<PlayerProps, State> {
     // and manage state from here
     this.setupHowl()
 
-    setInterval(function() {
+    this.scrollTimer = setInterval(function(this: Player) {
       const leftDiff = Math.max((this.trackScroller?.clientWidth ?? 0) - 435, 0)
       if (leftDiff === 0) return
 
@@ -116,33 +93,29 @@ class Player extends React.Component<PlayerProps, State> {
     })
 
     window.addEventListener('keypress', (e) => {
+      e.preventDefault()
       if (e.key === ' ') {
         this.toggleMedia()
       }
     })
-
-    // Render-side events
-    SystemEmitter.on(EMITTER_PLAYBACK_TRACK_SELECT, (trackAction: PlaybackTrackSelectAction) => {
-      this.setTrack(trackAction.trackIdx)
-    })
-
-    // if (this.props.defaultTrack) {
-    //   this.setTrack(this.props.defaultTrack)
-    // }
   }
-  
 
-  // componentDidUpdate(prevProps: Readonly<Props>): void {
-  //   if (this.props.playlist.id !== prevProps.playlist.id) {
-  //     console.log("=== NEW PLAYLIST ===")
-  //   }
-  // }
+  componentDidUpdate(prevProps: Readonly<PlayerProps>) {
+    const didUpdateScrubbing = prevProps.playback.isScrubbing != this.props.playback.isScrubbing && !this.props.playback.isScrubbing
+    if ((Math.abs(this.props.playback.eTime - prevProps.playback.eTime) > 1 && !this.props.playback.isScrubbing) || didUpdateScrubbing) {
+      this.howl?.seek(this.props.playback.eTime)
+    }
+    if (prevProps.playback.playlist?.id !== this.props.playback.playlist?.id) {
+      this.unloadHowl()
+      this.setupHowl(true)
+    }
+  }
 
   componentWillUnmount() {
     this.unloadHowl()
   }
 
-  setupHowl() {
+  setupHowl(shouldSeek: boolean = false) {
     this.howl = new Howl({
       src: [this.props.playback.playlist!.mp3Url!],
       format: ['mp3'],
@@ -153,45 +126,34 @@ class Player extends React.Component<PlayerProps, State> {
 
     const _this = this
 
-    this.howl.once('load', function() {
-      _this.props.updatePlaybackState(PlayerState.Ready, _this.howl?.duration() ?? 0)
-      _this.props.setPlaybackETime(0)
-      // _this.setState({
-      //   playerReady: true,
-      //   status: PlayerState.Ready,
-      //   duration: _this.howl?.duration() ?? 0,
-      //   currSongIdx: 0
-      // })
+    this.howl.on('loaderror', function() {
+      _this.unloadHowl()
+      _this.setupHowl(true)
     })
 
-    // FIXME redux (elapsed time)
+    this.howl.once('load', function() {
+      _this.props.updatePlaybackState(PlayerState.Ready, _this.howl?.duration() ?? 0)
+      let seektime = 0
+      if (shouldSeek) {
+        seektime = _this.props.playback.eTime
+      }
+      _this.props.setPlaybackETime(seektime)
+      _this.howl?.seek(seektime)
+    })
+
     this.howl.on('play', function() {
-      // _this.setState({ status: PlayerState.Playing })
       if (_this.howl?.playing()) {
         _this.tickTimer = setInterval(() => {
-          if (_this.state.status === PlayerState.Paused) return
+          if (_this.props.playback.status === PlayerState.Paused) return
+          console.log(`TICK playlist ${_this.props.playback.playlist?.id}`)
 
-          // _this.setState({ eTime: _this.state.eTime + 1 })
           _this.props.etimeTick()
-          // TODO: make this better, performance check here
-          // Use currIdx for this
-          const playlist = _this.props.playback.playlist!
-          playlist.songs.forEach((song, i) => {
-            if (_this.state.eTime >= (song.timestamp ?? 0)) {
-              if (_this.state.eTime < ((playlist.songs[i + 1]?.timestamp ?? 0))) {
-                _this.setTrackDisplay(i)
-                // FIXME
-                // _this.props.setCurrSong(i)
-              }
-            }
-          })
         }, 1000)
       }
     })
 
     this.howl.on('pause', function() {
-      _this.setState({ status: PlayerState.Paused })
-      // clearInterval(_this.tickTimer)
+      _this.props.updatePlaybackState(PlayerState.Paused)
     })
 
     this.howl?.on('stop', this.resetHowl.bind(this))
@@ -199,27 +161,10 @@ class Player extends React.Component<PlayerProps, State> {
   }
 
   unloadHowl() {
+    clearInterval(this.tickTimer!)
+    clearInterval(this.scrollTimer!)
     this.howl?.unload()
     this.howl = null
-  }
-
-  // TODO: stop howl and unload on playlist change
-
-  // TODO: can't scrub to first or last track
-  getTrackFromTs(): number {
-    const playlist = this.props.plaback.playlist!
-
-    for (let i = 0; i < playlist.songs.length; i++) {
-      const song = playlist.songs[i]
-      if (this.state.eTime >= (song.timestamp ?? 0)) {
-        if (this.state.eTime < ((playlist.songs[i + 1]?.timestamp ?? 0))) {
-          return i
-        } else if (i === playlist.songs.length - 1) {
-          return i
-        }
-      }
-    }
-    return 0
   }
 
   resetHowl() {
@@ -247,57 +192,25 @@ class Player extends React.Component<PlayerProps, State> {
   }
 
   skip(dir: number): void {
-    // TODO: On back, play current track from beginning, double click, skip to prev
-    const newIdx = (this.state.currSongIdx ?? 0) + dir
-    const nextSong = this.props.playlist.songs[newIdx]
-    // if (this.props.playlist.songs.length === 0) {
-    //   // TODO handle at beginning or end
-    //   let newETime = this.state.eTime + dir * 10
-    //   this.setState({eTime: newETime}, (() => {this.howl?.seek(newETime)}).bind(this))
-    // } else if (nextSong?.timestamp) {
+    let { currSongIdx, playlist } = this.props.playback
+    const newIdx = (currSongIdx ?? 0) + dir
+    const nextSong = playlist?.songs[newIdx]
     if (nextSong?.timestamp) {
-      this.howl?.seek(nextSong?.timestamp)
-      this.setTrackDisplay(newIdx, nextSong?.timestamp)
-      // FIXME
-      // this.props.setCurrSong(newIdx)
+      this.setTrackETime(nextSong!.timestamp)
     }
   }
 
-  setTrackDisplay(idx: number, time: number | null = null): void {
-    const update: State = {
-      ...this.state,
-      currSongIdx: idx
-    }
-
-    if (update.currSongIdx !== this.state.currSongIdx) {
-      update.trackNameLeft = 0
-      update.trackNameDir = -1
-    }
-
-    if (time) update.eTime = time
-
-    this.setState(update)
+  setTrackETime(time: number) {
+    this.props.setPlaybackETime(time)
   }
 
-  setTrack(idx: number, fromETime = false): void {
-    const songs = this.props.playback.playlist!.songs
-    const nextSong = songs[idx]
-    if (nextSong?.timestamp != null) {
-      const time = fromETime ? this.state.eTime : nextSong?.timestamp
-      this.howl?.seek(time)
-      this.setTrackDisplay(idx, time)
-      // FIXME
-      // this.props.setCurrSong(idx)
-
-    } else if (songs.length == 0) {
-      // Trackless playlist, just seek to the ts
-      this.howl?.seek(this.state.eTime)
-    }
+  onClickPlaylistName(e: React.MouseEvent) {
+    this.props.showPlaylist(this.props.playback.playlist!)
   }
 
   renderPlayerInfo() {
     const playlist = this.props.playback.playlist!
-    const song = playlist.songs[this.state.currSongIdx ?? 0]
+    const song = playlist.songs[this.props.playback.currSongIdx ?? 0]
     return (
       <PlayerInfo>
         <PlayerInfoWrap>
@@ -311,29 +224,24 @@ class Player extends React.Component<PlayerProps, State> {
             )
             : null
           }
-          <PlayerPlaylist>{playlist?.showName ?? '--'}</PlayerPlaylist>
+          <PlayerPlaylist onClick={this.onClickPlaylistName.bind(this)}>{playlist.showName}</PlayerPlaylist>
         </PlayerInfoWrap>
       </PlayerInfo>
     )
   }
 
   moveScrubber(percent: number, end = false) {
-    this.setState({ eTime: this.state.duration * percent }, () => {
-      if (end) this.endScrubbing()
-    })
+    let time = this.props.playback.duration * percent
+    this.props.updatePlaybackState(this.props.playback.status, null, true)
+    this.props.setPlaybackETime(time)
+    if (end) this.endScrubbing(time)
   }
 
-  endScrubbing() {
-    this.setTrack(this.getTrackFromTs(), true)
-  }
-
-  killPlayer() {
-    // stop media and clean
+  endScrubbing(time: number | null = null) {
+    this.props.updatePlaybackState(this.props.playback.status, null, false)
   }
 
   timestampString(ts: number): string {
-    var tsDiv = ts
-    
     let hours = ~~(ts / 3600)
     let minMod = ts % 3600
     let mins = ~~(minMod / 60)
@@ -390,8 +298,9 @@ const mapStateToProps = (state: RootState) => ({
   playback: state.playback
 })
 
-const mapDispatchToProps = (dispatch: Dispatch<PlaybackActionTypes>) => ({
-  updatePlaybackState: (state: PlayerState, dur: number | null = null) => dispatch(updatePlaybackState(state, dur)),
+const mapDispatchToProps = (dispatch: Dispatch<PlaybackActionTypes | UiActionTypes>) => ({
+  showPlaylist: (playlist: PlaylistInterface) => dispatch(setViewingPlaylist(playlist)),
+  updatePlaybackState: (state: PlayerState, dur: number | null = null, isScrubbing: boolean | null = null) => dispatch(updatePlaybackState(state, dur, isScrubbing)),
   setPlaybackETime: (eTime: number) => dispatch(setPlaybackEtime(eTime)),
   etimeTick: () => dispatch(playbackEtimeTick())
 })

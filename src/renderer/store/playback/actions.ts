@@ -5,10 +5,11 @@ import {
   TOGGLE_PLAYBACK
 } from './types'
 
-export function updatePlaybackState(state: PlayerState, duration: number | null): PlaybackActionTypes {
+export function updatePlaybackState(state: PlayerState, duration: number | null, isScrubbing: boolean | null): PlaybackActionTypes {
   return {
     type: SET_PLAYBACK_STATE,
     state,
+    isScrubbing,
     duration
   }
 }

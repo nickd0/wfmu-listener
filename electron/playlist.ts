@@ -142,19 +142,19 @@ export default class Playlist implements PlaylistInterface {
   streamUrl: string;
   mp3Url: string | null;
   songs: Song[];
-  style: unknown;
+  style?: { [key: string]: string };
   loaded: boolean;
 
   constructor(obj: PlaylistRawObject | null) {
-    const title = obj?.title[0]
+    const title = obj!.title[0]
 
     const [showName, dateStr] = scrapeTitle(title ?? '')
     this.showName = showName
     this.dateStr = dateStr
 
     // TODO
-    this.streamUrl = obj.link[0]
-    this.id = parseInt(obj.link[0].match(/show=(\d+)$/)?.[1] ?? '0')
+    this.streamUrl = obj!.link[0]
+    this.id = parseInt(obj!.link[0].match(/show=(\d+)$/)?.[1] ?? '0')
     this.playlistUrl = PLAYLIST_BASE_URL + this.id.toString()
 
     this.songs = []
