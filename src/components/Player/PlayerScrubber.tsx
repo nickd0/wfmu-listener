@@ -20,11 +20,18 @@ interface State {
 class PlayerScrubber extends React.Component<Props, State> {
   state: Readonly<State> = { scrubMove: false }
 
+  componentDidMount() {
+    window.addEventListener('mouseup', function(this: PlayerScrubber) {
+      this.onScrubberMouseUp()
+    }.bind(this))
+  }
+
   onScrubberMouseDown() {
     this.setState({scrubMove: true})
   }
 
-  onScrubberMouseUp() {
+  onScrubberMouseUp(e: React.MouseEvent | null = null) {
+    e?.stopPropagation()
     this.setState({scrubMove: false})
     this.props.onScrubberEnd()
   }

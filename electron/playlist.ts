@@ -104,7 +104,7 @@ export function fetchPlaylistInfo(playlist: Playlist): Promise<Playlist> {
         })
 
         if (playlist.streamUrl.indexOf('wfmu-listener://') !== -1) {
-          const listenPath = $('#date_desc_archive_section a')[1].href
+          const listenPath = $('#date_desc_archive_section a').get(1).attribs.href
           playlist.streamUrl = `https://www.wfmu.org${listenPath}`
         }
 

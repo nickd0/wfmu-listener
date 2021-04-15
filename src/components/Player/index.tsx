@@ -1,5 +1,5 @@
 import { Howl } from 'howler'
-import { ipcRenderer } from 'electron'
+import { ipcRenderer, clipboard } from 'electron'
 import React from 'react'
 import PlaylistInterface from '../../../interfaces/playlist'
 
@@ -145,7 +145,7 @@ class Player extends React.Component<PlayerProps, State> {
       if (_this.howl?.playing()) {
         _this.tickTimer = setInterval(() => {
           if (_this.props.playback.status === PlayerState.Paused) return
-          console.log(`TICK playlist ${_this.props.playback.playlist?.id}`)
+          console.log(`TICK playlist ${_this.props.playback.playlist?.id}, playing: ${_this.howl?.playing()}`)
 
           _this.props.etimeTick()
         }, 1000)
@@ -217,7 +217,7 @@ class Player extends React.Component<PlayerProps, State> {
           {
             playlist.songs.length
             ? (
-              <ScrollablePlayerInfo ref={this.setTrackInfoRef.bind(this)} style={{left: this.state.trackNameLeft}}>
+              <ScrollablePlayerInfo title="Click to copy to clipboard" ref={this.setTrackInfoRef.bind(this)} style={{left: this.state.trackNameLeft}}>
                 <PlayerTrackName>{song?.title ?? '--'}</PlayerTrackName>
                 <PlayerArtist>{song?.artist ?? '--'}</PlayerArtist>
               </ScrollablePlayerInfo>
