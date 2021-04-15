@@ -20,8 +20,8 @@
   - See https://github.com/electron/electron/issues/5268
   - https://github.com/MarshallOfSound/electron-media-service
   - https://github.com/MarshallOfSound/Google-Play-Music-Desktop-Player-UNOFFICIAL-
-- [ ] Structure/organization
-  - [ ] src/main and src/renderer
+- [x] Structure/organization
+  - [x] src/main and src/renderer
 - [ ] Copy song/artist to clipboard
 
 ## v0.2.0
